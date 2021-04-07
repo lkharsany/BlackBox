@@ -1,4 +1,6 @@
 language: python
 python: 
   -"3.9"
-install: pip install 
+install: pip install discord.py
+script:
+  -pytest

@@ -27,7 +27,7 @@ class BasicCog(commands.Cog):
 
         Cheers = ["hi", "hello"]
         if message.content.lower() in Cheers:
-            await message.channel.send('Hello there')
+            await message.channel.send('Hello there! {}'.format(message.author.mention))
             await self.bot.process_commands(message)
 
         if message.content.lower() == "ping":
@@ -39,6 +39,11 @@ class BasicCog(commands.Cog):
     @commands.has_role('SCRUM MASTER')
     async def clear(self, ctx):
         await ctx.channel.purge()
+
+    # CLEARS THE CHANNEL BY A SELECTED AMOUNT OF MESSAGES. ANYONE CAN USE IT AT THE MOMENT
+    @commands.command(name="Clear")
+    async def clear(self, ctx, amount=2):
+        await ctx.channel.purge(limit=amount)
 
 
 def setup(bot):

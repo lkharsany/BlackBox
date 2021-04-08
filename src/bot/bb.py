@@ -17,7 +17,6 @@ async def on_ready():
 async def on_message(message):
     if message.author == bot.user:
         return
-
     if message.content.startswith('./matty'):
         await message.channel.send('taiga')
     if message.content.startswith('./scrum'):

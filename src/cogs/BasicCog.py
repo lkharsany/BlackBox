@@ -1,5 +1,5 @@
-import discord
 from discord.ext import commands
+
 
 class BasicCog(commands.Cog):
     def __init__(self, bot):
@@ -7,19 +7,25 @@ class BasicCog(commands.Cog):
 
     @commands.command(name='CoolBot')
     async def cool_bot(self, ctx):
-            await ctx.send('This bot is cool. :)')
-
+        await ctx.send('This bot is cool. :)')
 
     @commands.command(name='Scrum')
-    async def cool_bot(self, ctx):
-            await ctx.send('Master')
+    @commands.has_role('SCRUM MASTER')
+    async def master(self, ctx):
+        await ctx.send('Master')
 
+    # WILL DM THE PERSON WHO INVOKES THE COMMAND
+    @commands.command(name="DM")
+    async def poke(self, ctx):
+        await ctx.send('DM sent')
+        await ctx.author.send('beep boop!')
 
-
+    # MONITORS ALL MESSAGES AND IF CERTAIN PHRASES ARE SAID IT WILL RESPOND.
+    # CAN ONLY HAVE ONE LISTENERS (PER COG?)
     @commands.Cog.listener()
-    async def on_message(self,message):
+    async def on_message(self, message):
 
-        Cheers= [ "hi", "hello"]
+        Cheers = ["hi", "hello"]
         if message.content.lower() in Cheers:
             await message.channel.send('Hello there')
             await self.bot.process_commands(message)
@@ -28,15 +34,11 @@ class BasicCog(commands.Cog):
             await message.channel.send('Pong!')
             await self.bot.process_commands(message)
 
-
+    # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE "SCRUM MASTER" CAN USE IT
     @commands.command(name="Clear")
+    @commands.has_role('SCRUM MASTER')
     async def clear(self, ctx):
         await ctx.channel.purge()
-
-
-
-
-
 
 
 def setup(bot):

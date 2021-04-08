@@ -7,9 +7,7 @@ load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
 
-
-
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='./')
 
 bot.load_extension("cogs.BasicCog")
 

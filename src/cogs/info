@@ -1,7 +1,0 @@
-Arguements to run test1.py {-c (channel), channel id, --run, all, target_bot_id, test_bot token}
--c
-827598982020071487
---run
-all
-827137883357708288
-testBot_token

@@ -1,3 +1,4 @@
 discord~=1.0.1
 distest~=0.6.2
 python-dotenv~=0.17.0
+python-coveralls

@@ -2,6 +2,7 @@ import sys
 from distest import TestCollector
 from distest import run_dtest_bot
 from dotenv import load_dotenv
+from distest import TestInterface
 from time import sleep
 import os
 

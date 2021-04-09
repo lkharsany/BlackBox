@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-python src/bot.py -t &
+coverage run src/bot.py -t &
 
 sleep 5s
 

@@ -10,7 +10,6 @@ class BasicCog(commands.Cog):
         await ctx.send('This bot is cool. :)')
 
     @commands.command(name='Scrum')
-    @commands.has_role('SCRUM MASTER')
     async def master(self, ctx):
         await ctx.send('Master')
 
@@ -24,9 +23,7 @@ class BasicCog(commands.Cog):
     # CAN ONLY HAVE ONE LISTENERS (PER COG?)
     @commands.Cog.listener()
     async def on_message(self, message):
-
-        Cheers = ["hi", "hello"]
-        if message.content.lower() in Cheers:
+        if message.content.lower() == "hi":
             await message.channel.send('Hello there')
             await self.bot.process_commands(message)
 
@@ -36,7 +33,7 @@ class BasicCog(commands.Cog):
 
     # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE "SCRUM MASTER" CAN USE IT
     @commands.command(name="Clear")
-    @commands.has_role('SCRUM MASTER')
+    @commands.has_role('scrum master')
     async def clear(self, ctx):
         await ctx.channel.purge()
 

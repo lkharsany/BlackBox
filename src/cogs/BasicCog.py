@@ -33,7 +33,6 @@ class BasicCog(commands.Cog):
 
     # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE "SCRUM MASTER" CAN USE IT
     @commands.command(name="Clear")
-    @commands.has_role('scrum master')
     async def clear(self, ctx):
         await ctx.channel.purge()
 

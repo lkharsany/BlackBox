@@ -17,25 +17,25 @@ created_channel = None
 @test_collector()
 async def test_scrum(interface):
     sleep(1)
-    response = await interface.assert_reply_contains("./Scrum", "Master")
+    await interface.assert_reply_contains("./Scrum", "Master")
 
 
 @test_collector()
 async def test_cool(interface):
     sleep(1)
-    response = await interface.assert_reply_contains("./CoolBot", "This bot is cool. :)")
+    await interface.assert_reply_contains("./CoolBot", "This bot is cool. :)")
 
 
 @test_collector()
 async def test_ping(interface):
     sleep(1)
-    response = await interface.assert_reply_contains("ping", "Plong!")
+    await interface.assert_reply_contains("ping", "Pong!")
 
 
 @test_collector()
 async def test_cheers(interface):
     sleep(1)
-    response = await interface.assert_reply_contains("hi", "Hello there")
+    await interface.assert_reply_contains("hi", "Hello there")
 
 
 # Actually run the bot

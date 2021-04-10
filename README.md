@@ -7,4 +7,4 @@ requires discord.py
 (cmd >> pip install discord.py)
 
 [![Coverage Status](https://coveralls.io/repos/github/lkharsany/BlackBox/badge.svg?branch=Nabeel)](https://coveralls.io/github/lkharsany/BlackBox?branch=Nabeel
-https://travis-ci.com/lkharsany/BlackBox.svg?branch=main)
+[![Build Status](https://travis-ci.com/lkharsany/BlackBox.svg?branch=main)](https://travis-ci.com/lkharsany/BlackBox)

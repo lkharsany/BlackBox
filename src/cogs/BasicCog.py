@@ -6,15 +6,22 @@ class BasicCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name='CoolBot')
+    @commands.cooldown(1,2)
     async def cool_bot(self, ctx):
         await ctx.send('This bot is cool. :)')
 
     @commands.command(name='Scrum')
-    async def master(self, ctx):
+    async def scrum(self, ctx):
         await ctx.send('Master')
+
+    @commands.command(name='bye')
+    async def shutdown(self, ctx):
+        await ctx.send('Shutting Down')
+        await self.bot.logout()
 
     # WILL DM THE PERSON WHO INVOKES THE COMMAND
     @commands.command(name="DM")
+    @commands.cooldown(1,2)
     async def poke(self, ctx):
         await ctx.send('DM sent')
         await ctx.author.send('beep boop!')
@@ -22,6 +29,7 @@ class BasicCog(commands.Cog):
     # MONITORS ALL MESSAGES AND IF CERTAIN PHRASES ARE SAID IT WILL RESPOND.
     # CAN ONLY HAVE ONE LISTENERS (PER COG?)
     @commands.Cog.listener()
+    @commands.cooldown(1,2)
     async def on_message(self, message):
         if message.content.lower() == "hi":
             await message.channel.send('Hello there')
@@ -33,8 +41,10 @@ class BasicCog(commands.Cog):
 
     # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE "SCRUM MASTER" CAN USE IT
     @commands.command(name="Clear")
+    @commands.cooldown(1,2)
     async def clear(self, ctx):
         await ctx.channel.purge()
+
 
 
 def setup(bot):

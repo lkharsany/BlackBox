@@ -2,7 +2,6 @@ import sys
 from distest import TestCollector
 from distest import run_dtest_bot
 from dotenv import load_dotenv
-from distest import TestInterface
 from time import sleep
 import os
 
@@ -37,6 +36,11 @@ async def test_ping(interface):
 async def test_cheers(interface):
     sleep(1)
     await interface.assert_reply_contains("hi", "Hello there")
+
+@test_collector()
+async def test_shutdown(interface):
+    sleep(1)
+    await interface.assert_reply_equals("./bye", 'Shutting Down')
 
 
 # Actually run the bot

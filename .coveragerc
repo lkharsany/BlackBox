@@ -1,5 +1,5 @@
 [run]
-omit =
-    */site-packages/*
-    */distutils/*
-    tests/*
+include  = 
+    ./src/bot.py
+    ./src/cogs/BasicCog.py
+

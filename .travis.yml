@@ -12,4 +12,5 @@ env:
 script:
   - bash run_test.sh 
 after_success:
+  - coverage report
   - coveralls debug

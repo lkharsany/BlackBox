@@ -29,7 +29,7 @@ async def test_cool(interface):
 @test_collector()
 async def test_ping(interface):
     sleep(1)
-    await interface.assert_reply_contains("ping", "P;ong!")
+    await interface.assert_reply_contains("ping", "Pong!")
 
 
 @test_collector()

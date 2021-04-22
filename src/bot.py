@@ -18,4 +18,5 @@ else:
     load_dotenv()
 TOKEN = os.getenv('TOKEN')
 bot.load_extension("cogs.BasicCog")
+bot.load_extension("cogs.DeleteCog")
 bot.run(TOKEN)

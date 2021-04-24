@@ -1,11 +1,8 @@
 # BlackBox
 
-Yay look its a discord bot..
+Yay look its a Discord Bot...
 
-built on python version 3.9.2
-requires discord.py
-(cmd >> pip install discord.py)
-
+A Discord Bot to help lecturers and tutors keep track of questions asked by students.  
 
 ![Discord Bot](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)
 

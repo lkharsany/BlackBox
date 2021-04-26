@@ -99,12 +99,8 @@ async def test_who(interface):
 
     check = """Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions"""
     if await interface.assert_reply_equals("./Who TestDiscordQuestions", check):
-        try:
-            await interface.assert_reply_embed_equals("Check Embed", embed, attributeList)
-            # await interface.assert_reply_embed_equals("Testing Embed", embed, attributeList)
-        except Exception as e:
-            print(e)
-        # await interface.get_delayed_reply(1, interface.assert_reply_embed_equals, embed,"")
+        await asyncio.sleep(1)
+        await interface.assert_reply_embed_equals("Check Embed", embed, attributeList)
 
 
 @test_collector()

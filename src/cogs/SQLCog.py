@@ -90,7 +90,9 @@ class SQLCog(commands.Cog):
             if len(result) > 0:
                 await ctx.send(
                     """Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions""")
-                await asyncio.sleep(2)
+
+                await asyncio.sleep(3)
+
                 for r in result:
                     ID = r['id']
                     user_id = int(r["username"])

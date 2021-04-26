@@ -101,8 +101,8 @@ async def test_who(interface):
     mes = await interface.assert_reply_equals("./Who TestDiscordQuestions", check)
     if mes:
         try:
-            interface.assert_reply_embed_equals(mes, embed, attributeList)
-            # await interface.assert_reply_embed_equals("Testing Embed", embed, attributeList)
+            await interface.assert_reply_embed_equals("Check Embed", embed, attributeList)
+            #await interface.assert_reply_embed_equals("Testing Embed", embed, attributeList)
         except Exception as e:
             print(e)
         # await interface.get_delayed_reply(1, interface.assert_reply_embed_equals, embed,"")

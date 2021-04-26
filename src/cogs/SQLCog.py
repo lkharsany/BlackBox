@@ -43,8 +43,11 @@ class DBConnect:
 class SQLCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.command(name='Ask')
+        self.description="Commands to Add, Display and Remove Questions from a Database "
+    @commands.command(brief="Usage: Ask <question>\nAdds Question to the Database",
+                      description="Adds Question to the Database",
+                      usage="<question>",
+                      name='Ask')
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
@@ -61,6 +64,7 @@ class SQLCog(commands.Cog):
 
         val = (user, mes)
         try:
+            #tries to insert values into table.
             Db = DBConnect()
             conn = Db.open()
             cur = conn.cursor()
@@ -68,12 +72,14 @@ class SQLCog(commands.Cog):
             cur.execute(Q, val)
             conn.commit()
         except pymysql.err as err:
-            print("here?")
             print(err)
         await ctx.send('Question Added')
 
-    @commands.command(name='Who')
+    @commands.command(brief="Displays All Questions",
+                      description="Displays all Questions, Users and ID as an Embeded Message\n Only Users with Allocated Roles Can Access This Command",
+                      name='Who')
     @commands.cooldown(1, 2)
+    # @commands.has_role("")
     async def Who(self, ctx, *, message=None):
         # used to "override" the table that the question is added to for testing purposes
         if not message:
@@ -108,8 +114,12 @@ class SQLCog(commands.Cog):
         except pymysql.err as err:
             print(err)
 
-    @commands.command(name='Answered')
+    @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",
+                      description="Removes Answered Question from Database\n Only Users with Allocated Roles Can Access This Command",
+                      usage="<question id>",
+                      name='Answered')
     @commands.cooldown(1, 2)
+    # @commands.has_role("")
     async def Del(self, ctx, *, message):
         # used to "override" the table that the question is added to for testing purposes
         if "$!" not in message:

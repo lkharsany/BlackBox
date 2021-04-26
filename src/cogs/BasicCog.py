@@ -17,6 +17,7 @@ class BasicCog(commands.Cog):
 
     @commands.command(name='bye', hidden=True)
     async def shutdown(self, ctx):
+        await asyncio.sleep(1)
         await ctx.send('Shutting Down...')
         await asyncio.sleep(5)
         await self.bot.logout()

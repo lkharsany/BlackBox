@@ -10,5 +10,5 @@ python src/tests/test_sql.py -c "$Channel_ID" --run all "$Target_ID" "$Tester"
 #test_bye should always be last test
 python src/tests/test_bye.py -c "$Channel_ID" --run all "$Target_ID" "$Tester"
 
-sleep 5s
+sleep 10s
 

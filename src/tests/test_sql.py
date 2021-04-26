@@ -97,10 +97,7 @@ async def test_who(interface):
     embed.add_field(name="Question Asked", value=Question)
     embed.set_footer(text=f"Question ID:  {str(ID)}")
 
-    check = """Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions"""
-    if await interface.assert_reply_equals("./Who TestDiscordQuestions", check):
-        await asyncio.sleep(1)
-        await interface.assert_reply_embed_equals("Check Embed", embed, attributeList)
+    await interface.assert_reply_embed_equals("./Who TestDiscordQuestions", embed, attributeList)
 
 
 @test_collector()

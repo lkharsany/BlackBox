@@ -88,11 +88,6 @@ class SQLCog(commands.Cog):
             cur.execute(Q)
             result = cur.fetchall()
             if len(result) > 0:
-                await ctx.send(
-                    """Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions""")
-
-                await asyncio.sleep(3)
-
                 for r in result:
                     ID = r['id']
                     user_id = int(r["username"])
@@ -104,8 +99,9 @@ class SQLCog(commands.Cog):
                     embed.set_author(name=member.name, url=Member_url, icon_url=member.avatar_url)
                     embed.add_field(name="Question Asked", value=question)
                     embed.set_footer(text=f"Question ID:  {str(ID)}")
-
                     await ctx.send(embed=embed)
+                #asyncio.sleep(2)
+                #await ctx.send("""Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions""")
 
             else:
                 await ctx.send("No Open Questions. Nice!")

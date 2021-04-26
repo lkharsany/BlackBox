@@ -3,5 +3,6 @@ distest~=0.6.2
 python-dotenv~=0.17.0
 coveralls
 coverage
+pyyaml
 PyMySQL~=0.9.3
 sshtunnel~=0.4.0

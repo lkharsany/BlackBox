@@ -75,6 +75,7 @@ class SQLCog(commands.Cog):
     @commands.command(name='Who')
     @commands.cooldown(1, 2)
     async def Who(self, ctx, *, message=None):
+        # used to "override" the table that the question is added to for testing purposes
         if not message:
             table = "DiscordQuestions"
         else:
@@ -112,7 +113,7 @@ class SQLCog(commands.Cog):
     @commands.command(name='Answered')
     @commands.cooldown(1, 2)
     async def Del(self, ctx, *, message):
-
+        # used to "override" the table that the question is added to for testing purposes
         if "$!" not in message:
             table = "DiscordQuestions"
             ID = message

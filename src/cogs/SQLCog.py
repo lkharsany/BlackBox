@@ -3,7 +3,7 @@ from sshtunnel import SSHTunnelForwarder
 from discord.ext import commands
 import os
 from discord import Embed
-
+import asyncio
 
 class DBConnect:
     def __init__(self):
@@ -89,6 +89,7 @@ class SQLCog(commands.Cog):
             if len(result) > 0:
                 await ctx.send(
                     """Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions""")
+                await asyncio.sleep(2)
                 for r in result:
                     ID = r['id']
                     user_id = int(r["username"])

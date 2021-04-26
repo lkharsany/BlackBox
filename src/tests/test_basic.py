@@ -39,11 +39,11 @@ async def test_cheers(interface):
 @test_collector()
 async def test_removal(interface):
     message = await interface.send_message("Sending Image...")
-    await message.channel.send(file=discord.File('src/tests/test.png'))
+    await message.channel.send(file=discord.File('src/tests/exPNG.png'))
     check = "Attachment Deleted. \n Please refrain from sending images or code."
 
     if await interface.get_delayed_reply(2, interface.assert_message_equals, check):
-        await message.channel.send(file=discord.File('src/tests/testFile.py'))
+        await message.channel.send(file=discord.File('src/tests/exPY.py'))
         check = "Attachment Deleted. \n Please refrain from sending images or code."
         await interface.get_delayed_reply(2, interface.assert_message_equals, check)
 

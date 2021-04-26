@@ -5,6 +5,8 @@ import pymysql.cursors
 from distest import TestCollector
 from distest import run_dtest_bot
 from sshtunnel import SSHTunnelForwarder
+from discord import Embed
+import asyncio
 
 
 class DBConnect:
@@ -42,64 +44,22 @@ class DBConnect:
         self._Server.stop()
 
 
-def addQuestion(user, ques):
-    val = (user, ques)
-    try:
-        Db = DBConnect()
-        conn = Db.open()
-        cur = conn.cursor()
-        Q = """INSERT INTO TestDiscordQuestions (username, question) Values (%s,%s)"""
-        affected = cur.execute(Q, val)
-        conn.commit()
-        Db.close()
-        return affected
-    except Exception as e:
-        print(e)
-
-    return -99
-
-
-def removeQuestionByID(ID):
-    try:
-        Db = DBConnect()
-        conn = Db.open()
-        cur = conn.cursor()
-        Q = """DELETE FROM TestDiscordQuestions WHERE id= %s """
-        affected = cur.execute(Q, (ID,))
-        conn.commit()
-        Db.close()
-        return affected
-    except Exception as e:
-        print(e)
-    return -99
-
-
-def removeAllBotQuestions(username):
-    try:
-        Db = DBConnect()
-        conn = Db.open()
-        cur = conn.cursor()
-        Q = """DELETE FROM DiscordQuestions WHERE username = %s """
-        affected = cur.execute(Q, (username,))
-        conn.commit()
-        Db.close()
-        return affected
-    except Exception as e:
-        print(e)
-    return -99
-
-
 def getQuestionsID(username):
     try:
         Db = DBConnect()
         conn = Db.open()
         cur = conn.cursor()
-        Q = """SELECT * FROM DiscordQuestions WHERE username = %s"""
+        Q = """SELECT * FROM TestDiscordQuestions WHERE username = %s"""
         cur.execute(Q, (username,))
+
         result = cur.fetchone()
-        return result["id"]
+        if result:
+            return result["id"]
+        else:
+            return -99
     except Exception as e:
         print(e)
+        return -99
 
 
 TESTER = os.getenv('Tester')
@@ -110,31 +70,52 @@ created_channel = None
 @test_collector()
 async def test_ask(interface):
     await interface.send_message(
-        "./Ask Is this a test question?"
+        "./Ask TestDiscordQuestions$!Is this a test question?"
     )
-    Username = 829768047350251530
-    Question = "Is this a test question?"
-    affected = addQuestion(Username, Question)
-    if affected == 1:
-        await interface.get_delayed_reply(3, interface.assert_message_equals, 'Question Added')
+    user_id = 829768047350251530
+    await asyncio.sleep(3)
+    ID = getQuestionsID(user_id)
+    if ID != -99:
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Question Added')
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
+@test_collector()
 async def test_who(interface):
-    await interface.send_message("./Who")
-    Username = 829768047350251530
-    ID = getQuestionsID(Username)
-    await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+    message = await interface.send_message("Testing Query")
+    user_id = 829768047350251530
+    Question = "Is this a test question?"
+    member = message.author
+    ID = getQuestionsID(user_id)
+
+    attributeList = ["author"]
+
+    Member_url = " https://discordapp.com/users/" + str(user_id)
+    embed = Embed(color=0xff9999, title="", description="")
+    embed.set_author(name=member.name, url=Member_url, icon_url=member.avatar_url)
+    embed.add_field(name="Question Asked", value=Question)
+    embed.set_footer(text=f"Question ID:  {str(ID)}")
+
+    check = """Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions"""
+    mes = await interface.assert_reply_equals("./Who TestDiscordQuestions", check)
+    if mes:
+        try:
+            interface.assert_reply_embed_equals(mes, embed, attributeList)
+            # await interface.assert_reply_embed_equals("Testing Embed", embed, attributeList)
+        except Exception as e:
+            print(e)
+        # await interface.get_delayed_reply(1, interface.assert_reply_embed_equals, embed,"")
 
 
 @test_collector()
 async def test_answered(interface):
     Username = 829768047350251530
-    ID = str(getQuestionsID(Username))
-    await interface.send_message("./Answered " + ID)
-    affected = removeQuestionByID(ID)
-    if affected == 1:
+    ID = getQuestionsID(Username)
+    await interface.send_message("./Answered " + "TestDiscordQuestions$!" + str(ID))
+    await asyncio.sleep(3)
+    new_ID = getQuestionsID(Username)
+    if new_ID == -99:
         await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Removed')
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')

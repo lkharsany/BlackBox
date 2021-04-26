@@ -2,8 +2,7 @@ import sys
 from distest import TestCollector
 from distest import run_dtest_bot
 import os
-from time import sleep
-
+import asyncio
 TESTER = os.getenv('Tester')
 # The tests themselves
 
@@ -12,7 +11,7 @@ created_channel = None
 
 @test_collector()
 async def test_shutdown(interface):
-    sleep(1)
+    await asyncio.sleep(1)
     await interface.assert_reply_equals("./bye", 'Shutting Down')
 
 

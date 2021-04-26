@@ -1,12 +1,9 @@
 import sys
+
+import discord
 from distest import TestCollector
 from distest import run_dtest_bot
-from time import sleep
 import os
-from sshtunnel import SSHTunnelForwarder
-import pymysql.cursors
-
-
 
 TESTER = os.getenv('Tester')
 # The tests themselves
@@ -37,6 +34,19 @@ async def test_ping(interface):
 async def test_cheers(interface):
     await interface.send_message("hi")
     await interface.get_delayed_reply(1, interface.assert_message_equals, "Hello there")
+
+
+@test_collector()
+async def test_Removal(interface):
+    message = await interface.send_message("Sending Image...")
+    await message.channel.send(file=discord.File('src/tests/test.png'))
+    check = "Attachment Deleted. \n Please refrain from sending images or code."
+
+    if await interface.get_delayed_reply(2, interface.assert_message_equals, check):
+        await message.channel.send(file=discord.File('src/tests/testFile.py'))
+        check = "Attachment Deleted. \n Please refrain from sending images or code."
+        await interface.get_delayed_reply(2, interface.assert_message_equals, check)
+
 
 
 # Actually run the bot

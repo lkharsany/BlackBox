@@ -11,8 +11,9 @@ created_channel = None
 
 @test_collector()
 async def test_shutdown(interface):
-    await asyncio.sleep(1)
-    await interface.assert_reply_equals("./bye", 'Shutting Down')
+    await interface.send_message("./bye")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "Shutting Down")
+
 
 
 

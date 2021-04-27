@@ -5,7 +5,8 @@ import asyncio
 class BasicCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.description="Some Basic Commands"
+        self.description = "Some Basic Commands"
+
     @commands.command(name='CoolBot', brief="Give it a try", description="Give it a try")
     @commands.cooldown(1, 2)
     async def cool_bot(self, ctx):
@@ -22,7 +23,8 @@ class BasicCog(commands.Cog):
         await self.bot.logout()
 
     # WILL DM THE PERSON WHO INVOKES THE COMMAND
-    @commands.command(name="DM", brief="Send a Direct Message to person who called it", description="Send a Direct Message to person who called it")
+    @commands.command(name="DM", brief="Send a Direct Message to person who called it",
+                      description="Send a Direct Message to person who called it")
     @commands.cooldown(1, 2)
     async def dm(self, ctx):
         await ctx.send('DM sent')
@@ -52,10 +54,11 @@ class BasicCog(commands.Cog):
 
     # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE CAN USE IT
     @commands.command(name="Clear", brief="Clears Messages in Channel",
-                      description="Delete x Amount of Messages in Channel \nOnly Users With an Allocated Role can use this Command")
+                      description="Delete x Amount of Messages in Channel \nOnly Users With an Allocated Role can use "
+                                  "this Command")
     @commands.cooldown(1, 2)
-    #@commands.has_role("")
-    async def clear(self, ctx, amount = 5):
+    # @commands.has_role("")
+    async def clear(self, ctx, amount=5):
         await ctx.channel.purge(limit=amount)
 
 

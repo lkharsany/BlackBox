@@ -35,11 +35,11 @@ async def test_cheers(interface):
     await interface.send_message("hi")
     await interface.get_delayed_reply(1, interface.assert_message_equals, "Hello there")
 
+
 @test_collector()
 async def test_dm(interface):
     await interface.send_message("./DM")
     await interface.get_delayed_reply(1, interface.assert_message_equals, "DM sent")
-
 
 
 @test_collector()
@@ -52,7 +52,6 @@ async def test_removal(interface):
         await message.channel.send(file=discord.File('src/tests/exPy.py'))
         check = "Attachment Deleted. \n Please refrain from sending images or code."
         await interface.get_delayed_reply(2, interface.assert_message_equals, check)
-
 
 
 # Actually run the bot

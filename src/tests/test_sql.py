@@ -81,21 +81,19 @@ async def test_ask(interface):
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
-#@test_collector()
+@test_collector()
 async def test_who(interface):
     message = await interface.send_message("Testing Query")
     user_id = 829768047350251530
     Question = "Is this a test question?"
     member = message.author
     ID = getQuestionsID(user_id)
+    attributeList = ["author", "description"]
 
-    attributeList = ["author"]
-
-    Member_url = " https://discordapp.com/users/" + str(user_id)
-    embed = Embed(color=0xff9999, title="", description="")
-    embed.set_author(name=member.name, url=Member_url, icon_url=member.avatar_url)
+    embed = Embed(color=0xff9999, title="", description=member.mention)
+    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
     embed.add_field(name="Question Asked", value=Question)
-    embed.set_footer(text=f"Question ID:  {str(ID)}")
+    embed.set_footer(text=f"Question ID:  {ID}")
 
     await interface.assert_reply_embed_equals("./Who TestDiscordQuestions", embed, attributeList)
 

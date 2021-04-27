@@ -1,8 +1,9 @@
+import os
 import sys
+
 from distest import TestCollector
 from distest import run_dtest_bot
-import os
-import asyncio
+
 TESTER = os.getenv('Tester')
 # The tests themselves
 

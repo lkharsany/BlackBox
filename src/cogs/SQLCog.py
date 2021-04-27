@@ -99,16 +99,11 @@ class SQLCog(commands.Cog):
                     user_id = int(r["username"])
                     question = r["question"]
                     member = await ctx.bot.fetch_user(user_id)
-
-                    Member_url = " https://discordapp.com/users/" + str(user_id)
-                    embed = Embed(color=0xff9999, title="", description="")
-                    embed.set_author(name=member.name, url=Member_url, icon_url=member.avatar_url)
+                    embed = Embed(color=0xff9999, title="", description=member.mention)
+                    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
                     embed.add_field(name="Question Asked", value=question)
                     embed.set_footer(text=f"Question ID:  {str(ID)}")
                     await ctx.send(embed=embed)
-                #asyncio.sleep(2)
-                #await ctx.send("""Use The "./Answered" Command Followed by the Question ID to Delete Answered Questions""")
-
             else:
                 await ctx.send("No Open Questions. Nice!")
         except pymysql.err as err:

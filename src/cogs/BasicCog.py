@@ -44,13 +44,17 @@ class BasicCog(commands.Cog):
             await self.bot.process_commands(message)
 
         if message.attachments:
-            Blacklist = ["py", "java", "cpp", "html", "js", "c", ".txt", "jpg", "jpeg", "png", "svg"]
+            Blacklist = ['c', 'html', 'jpeg', 'css', 'java', 'jpg', 'svg', '.txt', 'docx', 'js', 'py', 'ipynb', 'png', 'sql', 'h', 'pdf', 'txt', 'cpp']
             filename = message.attachments[0].filename
             ext = filename.split(".")[-1]
             if ext in Blacklist:
                 await asyncio.sleep(1)
                 await message.delete()
-                await message.channel.send("Attachment Deleted. \n Please refrain from sending images or code.")
+                await message.channel.send("Attachment Deleted. \n Please refrain from sending images or code on this "
+                                           "channel.")
+                await message.author.send('Please do not send code to the channel, if you need help DM one of the '
+                                          'tutors or lecturers.')
+                await self.bot.process_commands(message)
 
     # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE CAN USE IT
     @commands.command(name="Clear", brief="Clears Messages in Channel",

@@ -46,11 +46,10 @@ async def test_dm(interface):
 async def test_removal(interface):
     message = await interface.send_message("Sending Image...")
     await message.channel.send(file=discord.File('src/tests/exPNG.png'))
-    check = "Attachment Deleted. \n Please refrain from sending images or code."
+    check = "Attachment Deleted. \n Please refrain from sending images or code on this channel."
 
     if await interface.get_delayed_reply(2, interface.assert_message_equals, check):
         await message.channel.send(file=discord.File('src/tests/exPy.py'))
-        check = "Attachment Deleted. \n Please refrain from sending images or code."
         await interface.get_delayed_reply(2, interface.assert_message_equals, check)
 
 

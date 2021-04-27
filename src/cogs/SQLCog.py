@@ -73,7 +73,6 @@ class SQLCog(commands.Cog):
             conn.commit()
         except pymysql.err as err:
             print(err)
-        await asyncio.sleep(3)
         await ctx.send('Question Added')
 
     @commands.command(brief="Displays All Questions",

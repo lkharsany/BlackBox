@@ -69,16 +69,14 @@ created_channel = None
 
 @test_collector()
 async def test_ask(interface):
-    await interface.send_message(
-        "./Ask TestDiscordQuestions$!Is this a test question?")
-    await interface.get_delayed_reply(5, interface.assert_message_equals, 'Question Added')
-    """user_id = 829768047350251530
-    ID = getQuestionsID(user_id)
-    if ID != -99:
-        await interface.get_delayed_reply(3, interface.assert_message_equals, 'Question Added')
+    Username = 829768047350251530
+    await interface.send_message("./Ask TestDiscordQuestions$!Is this a test question?")
+    await asyncio.sleep(3)
+    new_ID = getQuestionsID(Username)
+    if new_ID != -99:
+        await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
     else:
-        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')"""
-
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 @test_collector()
 async def test_who(interface):

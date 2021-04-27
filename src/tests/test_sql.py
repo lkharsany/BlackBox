@@ -72,10 +72,9 @@ async def test_ask(interface):
     await interface.send_message(
         "./Ask TestDiscordQuestions$!Is this a test question?")
     user_id = 829768047350251530
-    await asyncio.sleep(3)
     ID = getQuestionsID(user_id)
     if ID != -99:
-        await interface.get_delayed_reply(0, interface.assert_message_equals, 'Question Added')
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Question Added')
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 

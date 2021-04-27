@@ -81,7 +81,7 @@ class SQLCog(commands.Cog):
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Who(self, ctx, *, message=None):
-        # used to "override" the table that the question is added to for testing purposes
+        # used to "override" the table that the question is added to for testing purposes.
         if not message:
             table = "DiscordQuestions"
         else:

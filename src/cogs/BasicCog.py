@@ -3,6 +3,7 @@ import asyncio
 
 
 class BasicCog(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
         self.description = "Some Basic Commands"
@@ -28,7 +29,7 @@ class BasicCog(commands.Cog):
     @commands.cooldown(1, 2)
     async def dm(self, ctx):
         await ctx.send('DM sent')
-        await ctx.author.send('beep boop!')
+        await ctx.author.send('BEEP BOOP!')
 
     # MONITORS ALL MESSAGES AND IF CERTAIN PHRASES ARE SAID IT WILL RESPOND.
     # CAN ONLY HAVE ONE LISTENERS (PER COG?)

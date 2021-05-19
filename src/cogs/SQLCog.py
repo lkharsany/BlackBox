@@ -3,7 +3,8 @@ from sshtunnel import SSHTunnelForwarder
 from discord.ext import commands
 import os
 from discord import Embed
-import asyncio
+import time
+from datetime import datetime
 
 class DBConnect:
     def __init__(self):
@@ -40,6 +41,14 @@ class DBConnect:
         self._Server.stop()
 
 
+def convertTimestampToSQLDateTime(value):
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(value))
+
+
+def convertSQLDateTimeToTimestamp(value):
+    return time.mktime(time.strptime(value, '%Y-%m-%d %H:%M:%S'))
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -51,12 +60,12 @@ class SQLCog(commands.Cog):
                       description="Adds Question to the Database",
                       usage="<question>",
                       name='Ask')
-
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
-
-        #used to "override" the table that the question is added to for testing purposes
+        timestamp = datetime.now()
+        print(timestamp)
+        # used to "override" the table that the question is added to for testing purposes
         if "$!" not in message:
             table = "DiscordQuestions"
             mes = message
@@ -67,7 +76,7 @@ class SQLCog(commands.Cog):
 
         val = (user, mes)
         try:
-            #tries to insert values into table.
+            # tries to insert values into table.
             Db = DBConnect()
             conn = Db.open()
             cur = conn.cursor()
@@ -77,7 +86,6 @@ class SQLCog(commands.Cog):
         except pymysql.err as err:
             print(err)
         await ctx.send('Question Added')
-
 
     # Who command
     @commands.command(brief="Displays All Questions",

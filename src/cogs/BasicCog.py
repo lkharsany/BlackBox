@@ -28,8 +28,9 @@ class BasicCog(commands.Cog):
                       description="Send a Direct Message to person who called it")
     @commands.cooldown(1, 2)
     async def dm(self, ctx):
+        if not ctx.author.bot:
+            await ctx.author.send('BEEP BOOP!')
         await ctx.send('DM sent')
-        await ctx.author.send('BEEP BOOP!')
 
     # MONITORS ALL MESSAGES AND IF CERTAIN PHRASES ARE SAID IT WILL RESPOND.
     # CAN ONLY HAVE ONE LISTENERS (PER COG?)
@@ -45,7 +46,8 @@ class BasicCog(commands.Cog):
             await self.bot.process_commands(message)
 
         if message.attachments:
-            Blacklist = ['c', 'html', 'jpeg', 'css', 'java', 'jpg', 'svg', '.txt', 'docx', 'js', 'py', 'ipynb', 'png', 'sql', 'h', 'pdf', 'txt', 'cpp']
+            Blacklist = ['c', 'html', 'jpeg', 'css', 'java', 'jpg', 'svg', '.txt', 'docx', 'js', 'py', 'ipynb', 'png',
+                         'sql', 'h', 'pdf', 'txt', 'cpp']
             filename = message.attachments[0].filename
             ext = filename.split(".")[-1]
             if ext in Blacklist:
@@ -53,8 +55,10 @@ class BasicCog(commands.Cog):
                 await message.delete()
                 await message.channel.send("Attachment Deleted. \n Please refrain from sending images or code on this "
                                            "channel.")
-                await message.author.send('Please do not send code to the channel, if you need help DM one of the '
-                                          'tutors or lecturers.')
+
+                if not message.author.bot:
+                    await message.author.send('Please do not send code to the channel, if you need help DM one of the '
+                                              'tutors or lecturers.')
                 await self.bot.process_commands(message)
 
     # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE CAN USE IT

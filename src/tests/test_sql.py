@@ -87,7 +87,6 @@ async def test_answered(interface):
     Username = 829768047350251530
     ID = getQuestionsID(Username)
     await interface.send_message(f"./Answered {ID}")
-    await asyncio.sleep(3)
     new_ID = getQuestionsID(Username)
     if new_ID == -99:
         await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Removed')

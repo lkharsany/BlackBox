@@ -124,7 +124,8 @@ class SQLCog(commands.Cog):
 
     # Answered command
     @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",
-                      description="Removes Answered Question from Database\n Only Users with Allocated Roles Can Access This Command",
+                      description="Removes Answered Question from Database\n Only Users with Allocated Roles Can "
+                                  "Access This Command",
                       usage="<question id>",
                       name='Answered')
     @commands.cooldown(1, 2)

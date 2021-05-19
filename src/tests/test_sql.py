@@ -80,7 +80,6 @@ async def test_ask(interface):
 
 @test_collector()
 async def test_who(interface):
-    await asyncio.sleep(3)
     message = await interface.send_message("Testing Query")
     user_id = 829768047350251530
     Question = "Is this a test question?"

@@ -7,6 +7,10 @@ import time
 from datetime import datetime
 
 
+AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
+WhoDesc = "Displays all Questions, Users and ID as an Embeded Message\n Only Users with  Allocated Roles Can Access This Command"
+AnsweredDesc = "Removes Answered Question from Database\n Only Users with Allocated Roles Can Access This Command"
+
 class DBConnect:
     def __init__(self):
         self._username = os.getenv('db_username')
@@ -71,7 +75,7 @@ class SQLCog(commands.Cog):
         self.description = "Commands to Add, Display and Remove Questions from a Database"
 
     # Ask command
-    @commands.command(brief="Usage: Ask <question>\nAdds Question to the Database",
+    @commands.command(brief=AskBrief,
                       description="Adds Question to the Database",
                       usage="<question>",
                       name='Ask')
@@ -106,10 +110,11 @@ class SQLCog(commands.Cog):
             except pymysql.err as err:
                 print(err)
 
+
+
     # Who command
     @commands.command(brief="Displays All Questions",
-                      description="Displays all Questions, Users and ID as an Embeded Message\n Only Users with "
-                                  "Allocated Roles Can Access This Command",
+                      description=WhoDesc,
                       name='Who')
     @commands.cooldown(1, 2)
     # @commands.has_role("")
@@ -166,8 +171,7 @@ class SQLCog(commands.Cog):
 
     # Answered command
     @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",
-                      description="Removes Answered Question from Database\n Only Users with Allocated Roles Can "
-                                  "Access This Command",
+                      description=AnsweredDesc,
                       usage="<question id>",
                       name='Answered')
     @commands.cooldown(1, 2)
@@ -186,9 +190,10 @@ class SQLCog(commands.Cog):
                     cur.execute(Q, (ID,))
                     conn.commit()
                     Db.close()
+                    await ctx.send('Question Removed')
                 except pymysql.err as err:
                     print(err)
-                await ctx.send('Question Removed')
+
             else:
                 await ctx.send("Not a Valid Answered ID")
         else:
@@ -202,9 +207,10 @@ class SQLCog(commands.Cog):
                     cur.execute(Q, (ID,))
                     conn.commit()
                     Db.close()
+                    await ctx.send('Question Removed')
                 except pymysql.err as err:
                     print(err)
-                await ctx.send('Question Removed')
+
             else:
                 await ctx.send("Not a Valid Answered ID")
 

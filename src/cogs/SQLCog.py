@@ -40,6 +40,27 @@ class DBConnect:
         self.Connection.close()
         self._Server.stop()
 
+class TravisDBConnect:
+    def __init__(self):
+        self._username = "dev"
+        self._password = ""
+        self._database = "testDB"
+
+    def open(self):
+        connection = pymysql.connect(
+            host='127.0.0.1',
+            user=self._username,
+            password=self._password,
+            database=self._database,
+            port=3306,
+            cursorclass=pymysql.cursors.DictCursor)
+
+        self.Connection = connection
+        return self.Connection
+
+    def close(self):
+        self.Connection.close()
+
 
 class SQLCog(commands.Cog):
 
@@ -55,24 +76,37 @@ class SQLCog(commands.Cog):
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
+        val = (user, message)
         # used to "override" the table that the question is added to for testing purposes
         if not ctx.message.author.bot:
             table = "DiscordQuestions"
+            try:
+                # tries to insert values into table.
+                Db = DBConnect()
+                conn = Db.open()
+                cur = conn.cursor()
+                Q = f"""INSERT INTO {table} (username, question) Values (%s,%s)"""
+                cur.execute(Q, val)
+                conn.commit()
+                await ctx.send('Question Added')
+            except pymysql.err as err:
+                print(err)
         else:
             table = "TestDiscordQuestions"
+            try:
+                # tries to insert values into table.
+                Db = TravisDBConnect()
+                conn = Db.open()
+                cur = conn.cursor()
+                Q = f"""INSERT INTO {table} (username, question) Values (%s,%s)"""
+                cur.execute(Q, val)
+                conn.commit()
+                await ctx.send('Question Added')
+            except pymysql.err as err:
+                print(err)
 
-        val = (user, message)
-        try:
-            # tries to insert values into table.
-            Db = DBConnect()
-            conn = Db.open()
-            cur = conn.cursor()
-            Q = f"""INSERT INTO {table} (username, question) Values (%s,%s)"""
-            cur.execute(Q, val)
-            conn.commit()
-        except pymysql.err as err:
-            print(err)
-        await ctx.send('Question Added')
+
+
 
     # Who command
     @commands.command(brief="Displays All Questions",

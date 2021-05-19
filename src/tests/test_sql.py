@@ -10,7 +10,7 @@ import asyncio
 
 class TravisDBConnect:
     def __init__(self):
-        self._username = "dev"
+        self._username = "root"
         self._password = ""
         self._database = "testDB"
 
@@ -65,7 +65,7 @@ async def test_ask(interface):
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
-@test_collector()
+#@test_collector()
 async def test_who(interface):
     message = await interface.send_message("Testing Query")
     user_id = 829768047350251530
@@ -82,7 +82,7 @@ async def test_who(interface):
     await interface.assert_reply_embed_equals("./Who TestDiscordQuestions", embed, attributeList)
 
 
-@test_collector()
+#@test_collector()
 async def test_answered(interface):
     Username = 829768047350251530
     ID = getQuestionsID(Username)

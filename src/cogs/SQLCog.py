@@ -41,14 +41,6 @@ class DBConnect:
         self._Server.stop()
 
 
-def convertTimestampToSQLDateTime(value):
-    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(value))
-
-
-def convertSQLDateTimeToTimestamp(value):
-    return time.mktime(time.strptime(value, '%Y-%m-%d %H:%M:%S'))
-
-
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -63,8 +55,6 @@ class SQLCog(commands.Cog):
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
-        timestamp = datetime.now()
-        print(timestamp)
         # used to "override" the table that the question is added to for testing purposes
         if not ctx.message.author.bot:
             table = "DiscordQuestions"

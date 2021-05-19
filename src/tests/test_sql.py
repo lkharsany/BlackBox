@@ -71,11 +71,7 @@ created_channel = None
 async def test_ask(interface):
     Username = 829768047350251530
     await interface.send_message("./Ask TestDiscordQuestions$!Is this a test question?")
-    new_ID = getQuestionsID(Username)
-    if new_ID != -99:
-        await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
-    else:
-        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+    await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
 
 @test_collector()
 async def test_who(interface):
@@ -83,13 +79,13 @@ async def test_who(interface):
     user_id = 829768047350251530
     Question = "Is this a test question?"
     member = message.author
-    ID = getQuestionsID(user_id)
+    #ID = getQuestionsID(user_id)
     attributeList = ["author", "description"]
 
     embed = Embed(color=0xff9999, title="", description=member.mention)
     embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
     embed.add_field(name="Question Asked", value=Question)
-    embed.set_footer(text=f"Question ID:  {ID}")
+    #embed.set_footer(text=f"Question ID:  {ID}")
 
     await interface.assert_reply_embed_equals("./Who TestDiscordQuestions", embed, attributeList)
 

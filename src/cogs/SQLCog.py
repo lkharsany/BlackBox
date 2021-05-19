@@ -42,7 +42,7 @@ class DBConnect:
 
 class TravisDBConnect:
     def __init__(self):
-        self._username = "dev"
+        self._username = "root"
         self._password = ""
         self._database = "testDB"
 

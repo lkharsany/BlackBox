@@ -41,17 +41,20 @@ class DBConnect:
 
 
 class SQLCog(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
-        self.description="Commands to Add, Display and Remove Questions from a Database "
+        self.description = "Commands to Add, Display and Remove Questions from a Database"
+
+    # Ask command
     @commands.command(brief="Usage: Ask <question>\nAdds Question to the Database",
                       description="Adds Question to the Database",
                       usage="<question>",
                       name='Ask')
+
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
-
 
         #used to "override" the table that the question is added to for testing purposes
         if "$!" not in message:
@@ -75,6 +78,8 @@ class SQLCog(commands.Cog):
             print(err)
         await ctx.send('Question Added')
 
+
+    # Who command
     @commands.command(brief="Displays All Questions",
                       description="Displays all Questions, Users and ID as an Embeded Message\n Only Users with Allocated Roles Can Access This Command",
                       name='Who')
@@ -109,6 +114,7 @@ class SQLCog(commands.Cog):
         except pymysql.err as err:
             print(err)
 
+    # Answered command
     @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",
                       description="Removes Answered Question from Database\n Only Users with Allocated Roles Can Access This Command",
                       usage="<question id>",

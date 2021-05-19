@@ -1,6 +1,6 @@
 from discord.ext import commands
 import asyncio
-
+import time
 
 class BasicCog(commands.Cog):
 
@@ -20,7 +20,7 @@ class BasicCog(commands.Cog):
     @commands.command(name='bye', hidden=True)
     async def shutdown(self, ctx):
         await ctx.send('Shutting Down...')
-        await asyncio.sleep(5)
+        await asyncio.sleep(3)
         await self.bot.logout()
 
     # WILL DM THE PERSON WHO INVOKES THE COMMAND

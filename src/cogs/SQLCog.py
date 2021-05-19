@@ -66,15 +66,12 @@ class SQLCog(commands.Cog):
         timestamp = datetime.now()
         print(timestamp)
         # used to "override" the table that the question is added to for testing purposes
-        if "$!" not in message:
+        if not ctx.message.author.bot:
             table = "DiscordQuestions"
-            mes = message
         else:
-            mes_list = message.split("$!")
-            table = mes_list[0]
-            mes = mes_list[1]
+            table = "TestDiscordQuestions"
 
-        val = (user, mes)
+        val = (user, message)
         try:
             # tries to insert values into table.
             Db = DBConnect()
@@ -89,16 +86,17 @@ class SQLCog(commands.Cog):
 
     # Who command
     @commands.command(brief="Displays All Questions",
-                      description="Displays all Questions, Users and ID as an Embeded Message\n Only Users with Allocated Roles Can Access This Command",
+                      description="Displays all Questions, Users and ID as an Embeded Message\n Only Users with "
+                                  "Allocated Roles Can Access This Command",
                       name='Who')
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Who(self, ctx, *, message=None):
-        # used to "override" the table that the question is added to for testing purposes.
-        if not message:
+        # used to "override" the table that the question is added to for testing purposes
+        if not ctx.author.bot:
             table = "DiscordQuestions"
         else:
-            table = message
+            table = "TestDiscordQuestions"
         try:
             Db = DBConnect()
             conn = Db.open()
@@ -132,14 +130,12 @@ class SQLCog(commands.Cog):
     # @commands.has_role("")
     async def Del(self, ctx, *, message):
         # used to "override" the table that the question is added to for testing purposes
-        if "$!" not in message:
+        if not ctx.message.author.bot:
             table = "DiscordQuestions"
-            ID = message
         else:
-            mes_list = message.split("$!")
-            table = mes_list[0]
-            ID = mes_list[1]
+            table = "TestDiscordQuestions"
 
+        ID = message
         if ID.isdigit():
             ID = int(ID)
             try:

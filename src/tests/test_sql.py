@@ -71,7 +71,6 @@ created_channel = None
 async def test_ask(interface):
     Username = 829768047350251530
     await interface.send_message("./Ask TestDiscordQuestions$!Is this a test question?")
-    await asyncio.sleep(3)
     new_ID = getQuestionsID(Username)
     if new_ID != -99:
         await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')

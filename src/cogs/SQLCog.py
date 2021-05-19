@@ -6,6 +6,7 @@ from discord import Embed
 import time
 from datetime import datetime
 
+
 class DBConnect:
     def __init__(self):
         self._username = os.getenv('db_username')
@@ -39,6 +40,7 @@ class DBConnect:
     def close(self):
         self.Connection.close()
         self._Server.stop()
+
 
 class TravisDBConnect:
     def __init__(self):
@@ -79,34 +81,30 @@ class SQLCog(commands.Cog):
         val = (user, message)
         # used to "override" the table that the question is added to for testing purposes
         if not ctx.message.author.bot:
-            table = "DiscordQuestions"
             try:
                 # tries to insert values into table.
                 Db = DBConnect()
                 conn = Db.open()
                 cur = conn.cursor()
-                Q = f"""INSERT INTO {table} (username, question) Values (%s,%s)"""
+                Q = f"""INSERT INTO DiscordQuestions (username, question) Values (%s,%s)"""
                 cur.execute(Q, val)
                 conn.commit()
                 await ctx.send('Question Added')
             except pymysql.err as err:
                 print(err)
+
         else:
-            table = "TestDiscordQuestions"
             try:
                 # tries to insert values into table.
                 Db = TravisDBConnect()
                 conn = Db.open()
                 cur = conn.cursor()
-                Q = f"""INSERT INTO {table} (username, question) Values (%s,%s)"""
+                Q = f"""INSERT INTO TestDiscordQuestions (username, question) Values (%s,%s)"""
                 cur.execute(Q, val)
                 conn.commit()
                 await ctx.send('Question Added')
             except pymysql.err as err:
                 print(err)
-
-
-
 
     # Who command
     @commands.command(brief="Displays All Questions",
@@ -118,31 +116,53 @@ class SQLCog(commands.Cog):
     async def Who(self, ctx, *, message=None):
         # used to "override" the table that the question is added to for testing purposes
         if not ctx.author.bot:
-            table = "DiscordQuestions"
+            try:
+                Db = DBConnect()
+                conn = Db.open()
+                cur = conn.cursor()
+                Q = f"""Select * FROM DiscordQuestions"""
+                cur.execute(Q)
+                result = cur.fetchall()
+                if len(result) > 0:
+                    for r in result:
+                        ID = r['id']
+                        user_id = int(r["username"])
+                        question = r["question"]
+                        member = await ctx.bot.fetch_user(user_id)
+                        embed = Embed(color=0xff9999, title="", description=member.mention)
+                        embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
+                        embed.add_field(name="Question Asked", value=question)
+                        embed.set_footer(text=f"Question ID:  {str(ID)}")
+                        await ctx.send(embed=embed)
+                else:
+                    await ctx.send("No Open Questions. Nice!")
+            except pymysql.err as err:
+                print(err)
+
         else:
-            table = "TestDiscordQuestions"
-        try:
-            Db = DBConnect()
-            conn = Db.open()
-            cur = conn.cursor()
-            Q = f"""Select * FROM {table}"""
-            cur.execute(Q)
-            result = cur.fetchall()
-            if len(result) > 0:
-                for r in result:
-                    ID = r['id']
-                    user_id = int(r["username"])
-                    question = r["question"]
-                    member = await ctx.bot.fetch_user(user_id)
-                    embed = Embed(color=0xff9999, title="", description=member.mention)
-                    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-                    embed.add_field(name="Question Asked", value=question)
-                    embed.set_footer(text=f"Question ID:  {str(ID)}")
-                    await ctx.send(embed=embed)
-            else:
-                await ctx.send("No Open Questions. Nice!")
-        except pymysql.err as err:
-            print(err)
+            try:
+                Db = TravisDBConnect()
+                conn = Db.open()
+                cur = conn.cursor()
+                Q = f"""Select * FROM TestDiscordQuestions"""
+                cur.execute(Q)
+                result = cur.fetchall()
+                if len(result) > 0:
+                    for r in result:
+                        ID = r['id']
+                        user_id = int(r["username"])
+                        question = r["question"]
+                        member = await ctx.bot.fetch_user(user_id)
+                        embed = Embed(color=0xff9999, title="", description=member.mention)
+                        embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
+                        embed.add_field(name="Question Asked", value=question)
+                        embed.set_footer(text=f"Question ID:  {str(ID)}")
+                        await ctx.send(embed=embed)
+            except pymysql.err as err:
+                print(err)
+
+
+
 
     # Answered command
     @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",
@@ -153,28 +173,40 @@ class SQLCog(commands.Cog):
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Del(self, ctx, *, message):
+        ID = message
         # used to "override" the table that the question is added to for testing purposes
         if not ctx.message.author.bot:
-            table = "DiscordQuestions"
+            if ID.isdigit():
+                ID = int(ID)
+                try:
+                    Db = DBConnect()
+                    conn = Db.open()
+                    cur = conn.cursor()
+                    Q = f"""DELETE FROM "DiscordQuestions" WHERE id = %s """
+                    cur.execute(Q, (ID,))
+                    conn.commit()
+                    Db.close()
+                except pymysql.err as err:
+                    print(err)
+                await ctx.send('Question Removed')
+            else:
+                await ctx.send("Not a Valid Answered ID")
         else:
-            table = "TestDiscordQuestions"
-
-        ID = message
-        if ID.isdigit():
-            ID = int(ID)
-            try:
-                Db = DBConnect()
-                conn = Db.open()
-                cur = conn.cursor()
-                Q = f"""DELETE FROM {table} WHERE id = %s """
-                cur.execute(Q, (ID,))
-                conn.commit()
-                Db.close()
-            except pymysql.err as err:
-                print(err)
-            await ctx.send('Question Removed')
-        else:
-            await ctx.send("Not a Valid Answered ID")
+            if ID.isdigit():
+                ID = int(ID)
+                try:
+                    Db = TravisDBConnect()
+                    conn = Db.open()
+                    cur = conn.cursor()
+                    Q = f"""DELETE FROM "TestDiscordQuestions" WHERE id = %s """
+                    cur.execute(Q, (ID,))
+                    conn.commit()
+                    Db.close()
+                except pymysql.err as err:
+                    print(err)
+                await ctx.send('Question Removed')
+            else:
+                await ctx.send("Not a Valid Answered ID")
 
 
 def setup(bot):

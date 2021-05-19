@@ -79,7 +79,7 @@ async def test_who(interface):
     embed.add_field(name="Question Asked", value=Question)
     embed.set_footer(text=f"Question ID:  {ID}")
 
-    await interface.assert_reply_embed_equals("./Who TestDiscordQuestions", embed, attributeList)
+    await interface.assert_reply_embed_equals("./Who", embed, attributeList)
 
 
 #@test_collector()

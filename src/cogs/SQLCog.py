@@ -186,7 +186,7 @@ class SQLCog(commands.Cog):
                     Db = DBConnect()
                     conn = Db.open()
                     cur = conn.cursor()
-                    Q = f"""DELETE FROM "DiscordQuestions" WHERE id = %s """
+                    Q = f"""DELETE FROM DiscordQuestions WHERE id = %s """
                     cur.execute(Q, (ID,))
                     conn.commit()
                     Db.close()
@@ -203,7 +203,7 @@ class SQLCog(commands.Cog):
                     Db = TravisDBConnect()
                     conn = Db.open()
                     cur = conn.cursor()
-                    Q = f"""DELETE FROM "TestDiscordQuestions" WHERE id = %s """
+                    Q = f"""DELETE FROM TestDiscordQuestions WHERE id = %s """
                     cur.execute(Q, (ID,))
                     conn.commit()
                     Db.close()

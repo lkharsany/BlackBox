@@ -89,7 +89,7 @@ def addQuestion(table, val, isBot):
 def queryQuestions(table, isBot):
     try:
         if isBot:
-            Db = TravisDBConnect
+            Db = TravisDBConnect()
         else:
             Db = DBConnect()
         conn = Db.open()

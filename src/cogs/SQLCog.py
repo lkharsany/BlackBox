@@ -1,9 +1,12 @@
-import pymysql.cursors
-from sshtunnel import SSHTunnelForwarder
-from discord.ext import commands
 import os
-from discord import Embed
 from datetime import datetime
+
+import pymysql.cursors
+from discord import Embed
+from discord import PermissionOverwrite
+from discord.ext import commands
+from discord.utils import get
+from sshtunnel import SSHTunnelForwarder
 
 AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
 answeredBrief = "Usage: Answered <question id>\nRemoves Answered Question from Database"
@@ -70,24 +73,116 @@ class TravisDBConnect:
 
 
 def addQuestion(table, val, isBot):
+    # tries to insert values into table.
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
     try:
-        # tries to insert values into table.
-        if isBot:
-            Db = TravisDBConnect()
-        else:
-            Db = DBConnect()
         conn = Db.open()
         cur = conn.cursor()
         Q = f"""INSERT INTO {table} (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
         cur.execute(Q, val)
         conn.commit()
+        Db.close()
         return 1
     except pymysql.err as err:
         print(err)
+        Db.close()
         return -1
 
 
 def queryQuestions(table, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table}"""
+        cur.execute(Q)
+        result = cur.fetchall()
+        Db.close()
+        return result
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+def getQuestionRow(table, ID, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""SELECT * FROM {table} WHERE id = %s"""
+        cur.execute(Q, (ID,))
+
+        result = cur.fetchone()
+        Db.close()
+        if result:
+            return result
+        else:
+            return -1
+    except Exception as e:
+        print(e)
+        Db.close()
+        return -1
+
+
+def addAnswer(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""INSERT INTO {table} (asked_by, question, question_date, question_time, answered_by, answer, answer_date, answer_time) Values (%s,%s,%s,%s,%s,%s,%s,%s)"""
+        cur.execute(Q, val)
+        conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+def delQuestion(table, ID, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""DELETE FROM {table} WHERE id = %s """
+        cur.execute(Q, (ID,))
+        conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+def createQuestionEmbed(member, question, asked_date, asked_time, ID):
+    embed = Embed(color=0xff9999, title="", description=member.mention)
+    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
+    embed.add_field(name="Question Asked", value=question)
+    embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
+    embed.set_footer(text=f"Question ID:  {str(ID)}")
+    return embed
+
+
+def queryAnswers(table, isBot):
     try:
         if isBot:
             Db = TravisDBConnect()
@@ -104,68 +199,12 @@ def queryQuestions(table, isBot):
         return -1
 
 
-def getQuestionRow(table, ID, isBot):
-    try:
-        if isBot:
-            Db = TravisDBConnect()
-        else:
-            Db = DBConnect()
-        conn = Db.open()
-        cur = conn.cursor()
-        Q = f"""SELECT * FROM {table} WHERE id = %s"""
-        cur.execute(Q, (ID,))
-
-        result = cur.fetchone()
-        if result:
-            return result
-        else:
-            return -1
-    except Exception as e:
-        print(e)
-        return -1
-
-
-def addAnswer(table, val, isBot):
-    try:
-        if isBot:
-            Db = TravisDBConnect()
-        else:
-            Db = DBConnect()
-        conn = Db.open()
-        cur = conn.cursor()
-        Q = f"""INSERT INTO {table} (asked_by, question, question_date, question_time, answered_by, answer, answer_date, answer_time) Values (%s,%s,%s,%s,%s,%s,%s,%s)"""
-        cur.execute(Q, val)
-        conn.commit()
-        return 1
-    except pymysql.err as err:
-        print(err)
-        return -1
-
-
-def delQuestion(table, ID, isBot):
-    try:
-        if isBot:
-            Db = TravisDBConnect()
-        else:
-            Db = DBConnect()
-        conn = Db.open()
-        cur = conn.cursor()
-        Q = f"""DELETE FROM {table} WHERE id = %s """
-        cur.execute(Q, (ID,))
-        conn.commit()
-        Db.close()
-        return 1
-    except pymysql.err as err:
-        print(err)
-        return -1
-
-
-def createEmbed(member, question, asked_date, asked_time, ID):
-    embed = Embed(color=0xff9999, title="", description=member.mention)
-    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-    embed.add_field(name="Question Asked", value=question)
-    embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
-    embed.set_footer(text=f"Question ID:  {str(ID)}")
+def createAnswerEmbed(ans_member, question, answer):
+    embed = Embed(color=0xff9999, title="", description="")
+    embed.add_field(name="Question", value=question, inline=False)
+    embed.add_field(name="Answer", value=answer, inline=False)
+    # embed.add_field(name="Answered By", value=ans_member.mention,inline=False)
+    embed.set_footer(text=f"Answered By: {ans_member.name}")
     return embed
 
 
@@ -217,52 +256,15 @@ class SQLCog(commands.Cog):
                     asked_date = r["question_date"]
                     asked_time = r["question_time"]
                     member = await ctx.bot.fetch_user(user_id)
-                    embed = createEmbed(member, question, asked_date, asked_time, ID)
+                    embed = createQuestionEmbed(member, question, asked_date, asked_time, ID)
                     await ctx.send(embed=embed)
             else:
                 await ctx.send("No Open Questions. Nice!")
 
     # Answered command
-    #@commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answered')
-    #@commands.cooldown(1, 2)
+    # @commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answered')
+    # @commands.cooldown(1, 2)
     # @commands.has_role("")
-    async def Del(self, ctx, *, message):
-        ID = message
-        # used to "override" the table that the question is added to for testing purposes
-        if not ctx.message.author.bot:
-            if ID.isdigit():
-                ID = int(ID)
-                try:
-                    Db = DBConnect()
-                    conn = Db.open()
-                    cur = conn.cursor()
-                    Q = f"""DELETE FROM DiscordQuestions WHERE id = %s """
-                    cur.execute(Q, (ID,))
-                    conn.commit()
-                    Db.close()
-                    await ctx.send('Question Removed')
-                except pymysql.err as err:
-                    print(err)
-
-            else:
-                await ctx.send("Not a Valid Answered ID")
-        else:
-            if ID.isdigit():
-                ID = int(ID)
-                try:
-                    Db = TravisDBConnect()
-                    conn = Db.open()
-                    cur = conn.cursor()
-                    Q = f"""DELETE FROM TestDiscordQuestions WHERE id = %s """
-                    cur.execute(Q, (ID,))
-                    conn.commit()
-                    Db.close()
-                    await ctx.send('Question Removed')
-                except pymysql.err as err:
-                    print(err)
-
-            else:
-                await ctx.send("Not a Valid Answered ID")
 
     @commands.command(name='Answer')
     # @commands.has_role("")
@@ -283,13 +285,13 @@ class SQLCog(commands.Cog):
 
             if result != -1:
                 ID = result['id']
-                ask_by = int(result["username"])
+                asked_by = int(result["username"])
                 question = result["question"]
                 asked_date = result["question_date"]
                 asked_time = result["question_time"]
 
-                member = await ctx.bot.fetch_user(ask_by)
-                embed = createEmbed(member, question, asked_date, asked_time, ID)
+                member = await ctx.bot.fetch_user(asked_by)
+                embed = createQuestionEmbed(member, question, asked_date, asked_time, ID)
 
                 await ctx.send(embed=embed)
                 await ctx.send(f"What's the answer? Begin with the phrase \"answer: \"")
@@ -298,19 +300,81 @@ class SQLCog(commands.Cog):
                     return m.channel == ctx.channel and m.author == ctx.author and "answer" in m.content.lower()
 
                 msg = await self.bot.wait_for("message", check=check)
-                ans_by = int(msg.author.id)
-                answer = msg.content.split(" ", 1)[1]
-                curr_date = datetime.now().strftime('%Y-%m-%d')
-                curr_time = datetime.now().strftime('%H:%M:%S')
+                if msg:
+                    ans_by = int(msg.author.id)
+                    answer = msg.content.split(" ", 1)[1]
+                    curr_date = datetime.now().strftime('%Y-%m-%d')
+                    curr_time = datetime.now().strftime('%H:%M:%S')
+                    if not isBot:
+                        asked_member = await ctx.bot.fetch_user(asked_by)
+                        answered_member = await ctx.bot.fetch_user(ans_by)
+                        await asked_member.send(f"You asked: {question}  \n Answer: {answer}  \n"
+                                                f" Answered by:{answered_member.mention}")
 
-                val = (ask_by, question, asked_date, asked_time, ans_by, answer, curr_date, curr_time)
-                code = addAnswer(ansTable, val, isBot)
-                if code == 1:
-                    delCode = delQuestion(qTable, ID, isBot)
-                    if delCode == 1:
-                        await ctx.send("Question has been Answered")
+                    val = (asked_by, question, asked_date, asked_time, ans_by, answer, curr_date, curr_time)
+                    code = addAnswer(ansTable, val, isBot)
+                    if code == 1:
+                        delCode = delQuestion(qTable, ID, isBot)
+                        if delCode == 1:
+                            await ctx.send("Question has been Answered")
+                            await ctx.invoke(self.bot.get_command('FAQ'), isBot=isBot)
+
         else:
             await ctx.send("Not a Valid Answered ID")
+
+    @commands.command(name='FAQ')
+    # @commands.has_role("")
+    async def createChannel(self, ctx, *, isBot=True):
+        guild = ctx.guild
+        if not ctx.author.bot:
+            table = "DiscordAnswers"
+            isBot = False
+            channel_name = "faq"
+            overwrites = {
+                guild.default_role: PermissionOverwrite(send_messages=False),
+                guild.me: PermissionOverwrite(send_messages=True)
+            }
+        else:
+            table = "TestDiscordAnswers"
+            channel_name = "test faq"
+            overwrites = {
+                guild.default_role: PermissionOverwrite(read_messages=False, send_messages=False),
+                guild.me: PermissionOverwrite(send_messages=True)
+            }
+
+        channel = get(guild.text_channels, name=channel_name)
+        if channel:
+            oldMessages = await channel.history(limit=200).flatten()
+            for msg in oldMessages:
+                await msg.delete()
+        else:
+            channel = await guild.create_text_channel(channel_name, overwrites=overwrites)
+
+        result = queryAnswers(table, isBot)
+        if result != -1:
+            if len(result) > 0:
+                for r in result:
+                    ID = r['id']
+                    asked_by = int(r["asked_by"])
+                    question = r["question"]
+
+                    ans_by = int(r["answered_by"])
+                    answer = r["answer"]
+
+                    asked_member = await ctx.bot.fetch_user(asked_by)
+                    answered_member = await ctx.bot.fetch_user(ans_by)
+                    embed = createAnswerEmbed(answered_member, question, answer)
+                    await channel.send(embed=embed)
+            else:
+                await ctx.send("Ask Some Stuff")
+
+    # @commands.command(name='DELFAQ')
+    # @commands.has_role("")
+    async def delChannel(self, ctx):
+        guild = ctx.guild
+        channel = get(guild.text_channels, name='faq')
+        if channel:
+            await channel.delete()
 
 
 def setup(bot):

@@ -82,18 +82,6 @@ async def test_who(interface):
     await interface.assert_reply_embed_equals("./Who", embed, attributeList)
 
 
-# @test_collector()
-async def test_answered(interface):
-    Username = 829768047350251530
-    ID = getQuestionsID(Username)
-    await interface.send_message(f"./Answered {ID}")
-    new_ID = getQuestionsID(Username)
-    if new_ID == -99:
-        await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Removed')
-    else:
-        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-
-
 @test_collector()
 async def test_answer(interface):
     Username = 829768047350251530
@@ -116,6 +104,12 @@ async def test_answer(interface):
             message = await interface.send_message("answer: yes, yes it is")
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
+
+    #@test_collector()
+    async def test_FAQ(interface):
+        faq_channel = 845007642644578355
+        message = await interface.send_message("./FAQ")
+        await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 # Actually run the bot
 if __name__ == "__main__":

@@ -9,11 +9,12 @@ from discord.utils import get
 from sshtunnel import SSHTunnelForwarder
 
 AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
-answeredBrief = "Usage: Answered <question id>\nRemoves Answered Question from Database"
+answeredBrief = "Usage: Answer <question id>\n Will then need to send your answer prefixed with  the \"answer:\" when prompted \nRemoves Answered Question from Database"
 WhoDesc = "Displays all Questions, Users and ID as an Embeded Message\n Only Users with  Allocated Roles Can Access " \
           "This Command "
-AnsweredDesc = "Removes Answered Question from Database\n Only Users with Allocated Roles Can Access This Command"
+AnsweredDesc = "Removes Answered Question from Database and adds It to the answered Table \n Only Users with Allocated Roles Can Access This Command"
 
+FAQBrief = "Creates a FAQ Channel with all previously answered questions"
 
 class DBConnect:
     def __init__(self):
@@ -262,10 +263,8 @@ class SQLCog(commands.Cog):
                 await ctx.send("No Open Questions. Nice!")
 
     # Answered command
-    # @commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answered')
-    # @commands.cooldown(1, 2)
-    # @commands.has_role("")
-
+    @commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answered')
+    @commands.cooldown(1, 2)
     @commands.command(name='Answer')
     # @commands.has_role("")
     async def waitForReply(self, ctx, *, message):
@@ -324,7 +323,7 @@ class SQLCog(commands.Cog):
             await ctx.send("Not a Valid Answered ID")
 
 
-    @commands.command(name='FAQ')
+    @commands.command(brief=FAQBrief, description=FAQBrief,name='FAQ')
     # @commands.has_role("")
     async def createChannel(self, ctx, *, isBot=True):
         guild = ctx.guild

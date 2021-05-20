@@ -3,11 +3,12 @@ from sshtunnel import SSHTunnelForwarder
 from discord.ext import commands
 import os
 from discord import Embed
-import time
 from datetime import datetime
 
 AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
-WhoDesc = "Displays all Questions, Users and ID as an Embeded Message\n Only Users with  Allocated Roles Can Access This Command"
+answeredBrief = "Usage: Answered <question id>\nRemoves Answered Question from Database"
+WhoDesc = "Displays all Questions, Users and ID as an Embeded Message\n Only Users with  Allocated Roles Can Access " \
+          "This Command "
 AnsweredDesc = "Removes Answered Question from Database\n Only Users with Allocated Roles Can Access This Command"
 
 
@@ -103,6 +104,71 @@ def queryQuestions(table, isBot):
         return -1
 
 
+def getQuestionRow(table, ID, isBot):
+    try:
+        if isBot:
+            Db = TravisDBConnect()
+        else:
+            Db = DBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""SELECT * FROM {table} WHERE id = %s"""
+        cur.execute(Q, (ID,))
+
+        result = cur.fetchone()
+        if result:
+            return result
+        else:
+            return -1
+    except Exception as e:
+        print(e)
+        return -1
+
+
+def addAnswer(table, val, isBot):
+    try:
+        if isBot:
+            Db = TravisDBConnect()
+        else:
+            Db = DBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""INSERT INTO {table} (asked_by, question, question_date, question_time, answered_by, answer, answer_date, answer_time) Values (%s,%s,%s,%s,%s,%s,%s,%s)"""
+        cur.execute(Q, val)
+        conn.commit()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        return -1
+
+
+def delQuestion(table, ID, isBot):
+    try:
+        if isBot:
+            Db = TravisDBConnect()
+        else:
+            Db = DBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""DELETE FROM {table} WHERE id = %s """
+        cur.execute(Q, (ID,))
+        conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        return -1
+
+
+def createEmbed(member, question, asked_date, asked_time, ID):
+    embed = Embed(color=0xff9999, title="", description=member.mention)
+    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
+    embed.add_field(name="Question Asked", value=question)
+    embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
+    embed.set_footer(text=f"Question ID:  {str(ID)}")
+    return embed
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -151,21 +217,14 @@ class SQLCog(commands.Cog):
                     asked_date = r["question_date"]
                     asked_time = r["question_time"]
                     member = await ctx.bot.fetch_user(user_id)
-                    embed = Embed(color=0xff9999, title="", description=member.mention)
-                    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-                    embed.add_field(name="Question Asked", value=question)
-                    embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
-                    embed.set_footer(text=f"Question ID:  {str(ID)}")
+                    embed = createEmbed(member, question, asked_date, asked_time, ID)
                     await ctx.send(embed=embed)
             else:
                 await ctx.send("No Open Questions. Nice!")
 
     # Answered command
-    @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",
-                      description=AnsweredDesc,
-                      usage="<question id>",
-                      name='Answered')
-    @commands.cooldown(1, 2)
+    #@commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answered')
+    #@commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Del(self, ctx, *, message):
         ID = message
@@ -205,20 +264,51 @@ class SQLCog(commands.Cog):
             else:
                 await ctx.send("Not a Valid Answered ID")
 
-    @commands.command(name='Reply')
+    @commands.command(name='Answer')
     # @commands.has_role("")
     async def waitForReply(self, ctx, *, message):
-        if message.isDigit():
-            await ctx.send("What's the answer?")
+        ansID = message
+        if ansID.isdigit():
+            ansID = int(ansID)
+            isBot = True
+            if not ctx.author.bot:
+                ansTable = "DiscordAnswers"
+                qTable = "DiscordQuestions"
+                isBot = False
+            else:
+                ansTable = "TestDiscordAnswers"
+                qTable = "TestDiscordQuestions"
 
-            def check(m):
-                return m.channel == ctx.channel and m.author == ctx.author and "answer" in m.content.lower()
+            result = getQuestionRow(qTable, ansID, isBot)
 
-            msg = await self.bot.wait_for("message", check=check)
-            user = msg.author.id
-            answer = msg.content.split(" ", 1)[1]
+            if result != -1:
+                ID = result['id']
+                ask_by = int(result["username"])
+                question = result["question"]
+                asked_date = result["question_date"]
+                asked_time = result["question_time"]
 
+                member = await ctx.bot.fetch_user(ask_by)
+                embed = createEmbed(member, question, asked_date, asked_time, ID)
 
+                await ctx.send(embed=embed)
+                await ctx.send(f"What's the answer? Begin with the phrase \"answer: \"")
+
+                def check(m):
+                    return m.channel == ctx.channel and m.author == ctx.author and "answer" in m.content.lower()
+
+                msg = await self.bot.wait_for("message", check=check)
+                ans_by = int(msg.author.id)
+                answer = msg.content.split(" ", 1)[1]
+                curr_date = datetime.now().strftime('%Y-%m-%d')
+                curr_time = datetime.now().strftime('%H:%M:%S')
+
+                val = (ask_by, question, asked_date, asked_time, ans_by, answer, curr_date, curr_time)
+                code = addAnswer(ansTable, val, isBot)
+                if code == 1:
+                    delCode = delQuestion(qTable, ID, isBot)
+                    if delCode == 1:
+                        await ctx.send("Question has been Answered")
         else:
             await ctx.send("Not a Valid Answered ID")
 

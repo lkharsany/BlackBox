@@ -6,10 +6,10 @@ from discord import Embed
 import time
 from datetime import datetime
 
-
 AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
 WhoDesc = "Displays all Questions, Users and ID as an Embeded Message\n Only Users with  Allocated Roles Can Access This Command"
 AnsweredDesc = "Removes Answered Question from Database\n Only Users with Allocated Roles Can Access This Command"
+
 
 class DBConnect:
     def __init__(self):
@@ -82,7 +82,11 @@ class SQLCog(commands.Cog):
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
-        val = (user, message)
+
+        curr_date = datetime.now().strftime('%Y-%m-%d')
+        curr_time = datetime.now().strftime('%H:%M:%S')
+
+        val = (user, message,curr_date, curr_time)
         # used to "override" the table that the question is added to for testing purposes
         if not ctx.message.author.bot:
             try:
@@ -90,7 +94,7 @@ class SQLCog(commands.Cog):
                 Db = DBConnect()
                 conn = Db.open()
                 cur = conn.cursor()
-                Q = f"""INSERT INTO DiscordQuestions (username, question) Values (%s,%s)"""
+                Q = f"""INSERT INTO DiscordQuestions (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
                 cur.execute(Q, val)
                 conn.commit()
                 await ctx.send('Question Added')
@@ -103,14 +107,12 @@ class SQLCog(commands.Cog):
                 Db = TravisDBConnect()
                 conn = Db.open()
                 cur = conn.cursor()
-                Q = f"""INSERT INTO TestDiscordQuestions (username, question) Values (%s,%s)"""
+                Q = f"""INSERT INTO TestDiscordQuestions (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
                 cur.execute(Q, val)
                 conn.commit()
                 await ctx.send('Question Added')
             except pymysql.err as err:
                 print(err)
-
-
 
     # Who command
     @commands.command(brief="Displays All Questions",
@@ -133,10 +135,13 @@ class SQLCog(commands.Cog):
                         ID = r['id']
                         user_id = int(r["username"])
                         question = r["question"]
+                        asked_date = r["question_date"]
+                        asked_time = r["question_time"]
                         member = await ctx.bot.fetch_user(user_id)
                         embed = Embed(color=0xff9999, title="", description=member.mention)
                         embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
                         embed.add_field(name="Question Asked", value=question)
+                        embed.add_field(name="Asked On", value=str(asked_date)+"\n"+str(asked_time)+"\n")
                         embed.set_footer(text=f"Question ID:  {str(ID)}")
                         await ctx.send(embed=embed)
                 else:
@@ -157,15 +162,17 @@ class SQLCog(commands.Cog):
                         ID = r['id']
                         user_id = int(r["username"])
                         question = r["question"]
+                        asked_date = r["question_date"]
+                        asked_time = r["question_time"]
                         member = await ctx.bot.fetch_user(user_id)
                         embed = Embed(color=0xff9999, title="", description=member.mention)
                         embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
                         embed.add_field(name="Question Asked", value=question)
+                        embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
                         embed.set_footer(text=f"Question ID:  {str(ID)}")
                         await ctx.send(embed=embed)
             except pymysql.err as err:
                 print(err)
-
 
 
 
@@ -174,6 +181,7 @@ class SQLCog(commands.Cog):
                       description=AnsweredDesc,
                       usage="<question id>",
                       name='Answered')
+
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Del(self, ctx, *, message):
@@ -213,6 +221,23 @@ class SQLCog(commands.Cog):
 
             else:
                 await ctx.send("Not a Valid Answered ID")
+
+    @commands.command(name='Reply')
+    # @commands.has_role("")
+    async def waitForReply(self, ctx, *, message):
+        if message.isDigit():
+            await ctx.send("What's the answer?")
+
+            def check(m):
+                return m.channel == ctx.channel and m.author == ctx.author and "answer" in m.content.lower()
+
+            msg = await self.bot.wait_for("message", check=check)
+            user = msg.author.id
+            answer = msg.content.split(" ", 1)[1]
+
+
+        else:
+            await ctx.send("Not a Valid Answered ID")
 
 
 def setup(bot):

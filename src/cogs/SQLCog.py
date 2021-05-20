@@ -86,6 +86,23 @@ def addQuestion(table, val, isBot):
         return -1
 
 
+def queryQuestions(table, isBot):
+    try:
+        if isBot:
+            Db = TravisDBConnect
+        else:
+            Db = DBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table}"""
+        cur.execute(Q)
+        result = cur.fetchall()
+        return result
+    except pymysql.err as err:
+        print(err)
+        return -1
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -113,64 +130,35 @@ class SQLCog(commands.Cog):
             await ctx.send('Question Added')
 
     # Who command
-    @commands.command(brief="Displays All Questions",
-                      description=WhoDesc,
-                      name='Who')
+    @commands.command(brief="Displays All Questions", description=WhoDesc, name='Who')
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Who(self, ctx, *, message=None):
         # used to "override" the table that the question is added to for testing purposes
+        isBot = True
         if not ctx.author.bot:
-            try:
-                Db = DBConnect()
-                conn = Db.open()
-                cur = conn.cursor()
-                Q = f"""Select * FROM DiscordQuestions"""
-                cur.execute(Q)
-                result = cur.fetchall()
-                if len(result) > 0:
-                    for r in result:
-                        ID = r['id']
-                        user_id = int(r["username"])
-                        question = r["question"]
-                        asked_date = r["question_date"]
-                        asked_time = r["question_time"]
-                        member = await ctx.bot.fetch_user(user_id)
-                        embed = Embed(color=0xff9999, title="", description=member.mention)
-                        embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-                        embed.add_field(name="Question Asked", value=question)
-                        embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
-                        embed.set_footer(text=f"Question ID:  {str(ID)}")
-                        await ctx.send(embed=embed)
-                else:
-                    await ctx.send("No Open Questions. Nice!")
-            except pymysql.err as err:
-                print(err)
-
+            table = "DiscordQuestions"
+            isBot = False
         else:
-            try:
-                Db = TravisDBConnect()
-                conn = Db.open()
-                cur = conn.cursor()
-                Q = f"""Select * FROM TestDiscordQuestions"""
-                cur.execute(Q)
-                result = cur.fetchall()
-                if len(result) > 0:
-                    for r in result:
-                        ID = r['id']
-                        user_id = int(r["username"])
-                        question = r["question"]
-                        asked_date = r["question_date"]
-                        asked_time = r["question_time"]
-                        member = await ctx.bot.fetch_user(user_id)
-                        embed = Embed(color=0xff9999, title="", description=member.mention)
-                        embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-                        embed.add_field(name="Question Asked", value=question)
-                        embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
-                        embed.set_footer(text=f"Question ID:  {str(ID)}")
-                        await ctx.send(embed=embed)
-            except pymysql.err as err:
-                print(err)
+            table = "TestDiscordQuestions"
+        result = queryQuestions(table, isBot)
+        if result != -1:
+            if len(result) > 0:
+                for r in result:
+                    ID = r['id']
+                    user_id = int(r["username"])
+                    question = r["question"]
+                    asked_date = r["question_date"]
+                    asked_time = r["question_time"]
+                    member = await ctx.bot.fetch_user(user_id)
+                    embed = Embed(color=0xff9999, title="", description=member.mention)
+                    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
+                    embed.add_field(name="Question Asked", value=question)
+                    embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
+                    embed.set_footer(text=f"Question ID:  {str(ID)}")
+                    await ctx.send(embed=embed)
+            else:
+                await ctx.send("No Open Questions. Nice!")
 
     # Answered command
     @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",

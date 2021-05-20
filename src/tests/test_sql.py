@@ -110,9 +110,12 @@ async def test_answer(interface):
 
     x = await interface.assert_reply_embed_equals(f"./Answer {ID}", embed, attributeList)
     if x:
-        y = await interface.get_delayed_reply(2, interface.assert_message_equals, f"What's the answer? Begin with the phrase \"answer: \"")
+        y = await interface.get_delayed_reply(2, interface.assert_message_equals,
+                                              f"What's the answer? Begin with the phrase \"answer: \"")
         if y:
-            print("something")
+            message = await interface.send_message("answer: yes, yes it is")
+            await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
+
 
 # Actually run the bot
 if __name__ == "__main__":

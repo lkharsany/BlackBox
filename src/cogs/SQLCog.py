@@ -67,10 +67,14 @@ class TravisDBConnect:
     def close(self):
         self.Connection.close()
 
-def addQuestion(table, val):
+
+def addQuestion(table, val, isBot):
     try:
         # tries to insert values into table.
-        Db = DBConnect()
+        if isBot:
+            Db = TravisDBConnect()
+        else:
+            Db = DBConnect()
         conn = Db.open()
         cur = conn.cursor()
         Q = f"""INSERT INTO {table} (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
@@ -81,6 +85,7 @@ def addQuestion(table, val):
         print(err)
         return -1
 
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -88,7 +93,7 @@ class SQLCog(commands.Cog):
         self.description = "Commands to Add, Display and Remove Questions from a Database"
 
     # Ask command
-    @commands.command(brief=AskBrief,description="Adds Question to the Database",usage="<question>",name='Ask')
+    @commands.command(brief=AskBrief, description="Adds Question to the Database", usage="<question>", name='Ask')
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
@@ -96,16 +101,16 @@ class SQLCog(commands.Cog):
         curr_time = datetime.now().strftime('%H:%M:%S')
         val = (user, message, curr_date, curr_time)
         # used to "override" the table that the question is added to for testing purposes
+        isBot = True
         if not ctx.message.author.bot:
             table = "DiscordQuestions"
+            isBot = False
         else:
             table = "TestDiscordQuestions"
 
-        code = addQuestion(table,  val)
+        code = addQuestion(table, val, isBot)
         if code == 1:
             await ctx.send('Question Added')
-
-
 
     # Who command
     @commands.command(brief="Displays All Questions",
@@ -134,7 +139,7 @@ class SQLCog(commands.Cog):
                         embed = Embed(color=0xff9999, title="", description=member.mention)
                         embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
                         embed.add_field(name="Question Asked", value=question)
-                        embed.add_field(name="Asked On", value=str(asked_date)+"\n"+str(asked_time)+"\n")
+                        embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
                         embed.set_footer(text=f"Question ID:  {str(ID)}")
                         await ctx.send(embed=embed)
                 else:
@@ -167,14 +172,11 @@ class SQLCog(commands.Cog):
             except pymysql.err as err:
                 print(err)
 
-
-
     # Answered command
     @commands.command(brief="Usage: Answered <question id>\nRemoves Answered Question from Database",
                       description=AnsweredDesc,
                       usage="<question id>",
                       name='Answered')
-
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Del(self, ctx, *, message):
@@ -231,7 +233,6 @@ class SQLCog(commands.Cog):
 
         else:
             await ctx.send("Not a Valid Answered ID")
-
 
 
 def setup(bot):

@@ -108,12 +108,11 @@ async def test_answer(interface):
     embed.add_field(name="Question Asked", value=Question)
     embed.set_footer(text=f"Question ID:  {ID}")
 
-    def check(m):
-        return embed in m.embeds
-
-    x = await interface.wait_for_event("message", check=check)
-    print("something and ", x)
-
+    x = await interface.assert_reply_embed_equals(f"./Answer {ID}", embed, attributeList)
+    if x:
+        y = await interface.get_delayed_reply(2, interface.assert_message_equals, f"What's the answer? Begin with the phrase \"answer: \"")
+        if y:
+            print("something")
 
 # Actually run the bot
 if __name__ == "__main__":

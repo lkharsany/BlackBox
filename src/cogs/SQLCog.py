@@ -317,10 +317,12 @@ class SQLCog(commands.Cog):
                         delCode = delQuestion(qTable, ID, isBot)
                         if delCode == 1:
                             await ctx.send("Question has been Answered")
-                            await ctx.invoke(self.bot.get_command('FAQ'), isBot=isBot)
 
+                            if not isBot:
+                                await ctx.invoke(self.bot.get_command('FAQ'), isBot=isBot)
         else:
             await ctx.send("Not a Valid Answered ID")
+
 
     @commands.command(name='FAQ')
     # @commands.has_role("")
@@ -349,7 +351,7 @@ class SQLCog(commands.Cog):
                 await msg.delete()
         else:
             channel = await guild.create_text_channel(channel_name, overwrites=overwrites)
-
+            await ctx.send("FAQ Channel Created")
         result = queryAnswers(table, isBot)
         if result != -1:
             if len(result) > 0:
@@ -366,15 +368,22 @@ class SQLCog(commands.Cog):
                     embed = createAnswerEmbed(answered_member, question, answer)
                     await channel.send(embed=embed)
             else:
-                await ctx.send("Ask Some Stuff")
+                await channel.send("Ask Some Stuff")
 
-    # @commands.command(name='DELFAQ')
+
+    @commands.command(name='DELFAQ')
     # @commands.has_role("")
     async def delChannel(self, ctx):
+        if not ctx.author.bot:
+            channel_name = "faq"
+        else:
+            channel_name = "test faq"
         guild = ctx.guild
-        channel = get(guild.text_channels, name='faq')
+
+        channel = get(guild.text_channels, name=channel_name)
         if channel:
             await channel.delete()
+            await ctx.send("FAQ Channel Deleted")
 
 
 def setup(bot):

@@ -105,7 +105,7 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
-    #@test_collector()
+    @test_collector()
     async def test_FAQ(interface):
         faq_channel = 845007642644578355
         message = await interface.send_message("./FAQ")

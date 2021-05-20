@@ -105,6 +105,15 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
+@test_collector()
+async def test_faq(interface):
+    await interface.send_message("./FAQ")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Created")
+
+@test_collector()
+async def test_delfaq(interface):
+    await interface.send_message("./DELFAQ")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
 
 # Actually run the bot
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ AnsweredDesc = "Removes Answered Question from Database and adds It to the answe
 
 FAQBrief = "Creates a FAQ Channel with all previously answered questions"
 
+
 class DBConnect:
     def __init__(self):
         self._username = os.getenv('db_username')
@@ -178,7 +179,7 @@ def createQuestionEmbed(member, question, asked_date, asked_time, ID):
     asked_date = datetime.strptime(str(asked_date), '%Y-%m-%d').strftime('%d-%m-%y')
     embed = Embed(color=0xff9999, title="", description=member.mention)
     embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-    embed.add_field(name="Question Asked", value=question+"\n", inline=False)
+    embed.add_field(name="Question Asked", value=question + "\n", inline=False)
     embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n", inline=False)
     embed.set_footer(text=f"Question ID:  {str(ID)}")
     return embed
@@ -322,8 +323,7 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Answered ID")
 
-
-    @commands.command(brief=FAQBrief, description=FAQBrief,name='FAQ')
+    @commands.command(brief=FAQBrief, description=FAQBrief, name='FAQ')
     # @commands.has_role("")
     async def createChannel(self, ctx, *, isBot=True):
         guild = ctx.guild
@@ -339,7 +339,7 @@ class SQLCog(commands.Cog):
             table = "TestDiscordAnswers"
             channel_name = "test faq"
             overwrites = {
-                guild.default_role: PermissionOverwrite(send_messages=False),
+                guild.default_role: PermissionOverwrite(send_messages=False, read_messages=False),
                 guild.me: PermissionOverwrite(send_messages=True),
                 ctx.author: PermissionOverwrite(read_messages=True)
             }
@@ -351,7 +351,7 @@ class SQLCog(commands.Cog):
                 await msg.delete()
         else:
             channel = await guild.create_text_channel(channel_name, overwrites=overwrites)
-            await ctx.send("FAQ Channel Created")
+
         result = queryAnswers(table, isBot)
         if result != -1:
             if len(result) > 0:
@@ -366,9 +366,14 @@ class SQLCog(commands.Cog):
                     asked_member = await ctx.bot.fetch_user(asked_by)
                     answered_member = await ctx.bot.fetch_user(ans_by)
                     embed = createAnswerEmbed(answered_member, question, answer)
-                    await channel.send(embed=embed)
+                    if not isBot:
+                        await channel.send(embed=embed)
             else:
                 await channel.send("Ask Some Stuff")
+        if isBot:
+            await ctx.send("FAQ Channel Created")
+        else:
+            await ctx.send("Updating FAQ")
 
 
     @commands.command(name='DELFAQ')

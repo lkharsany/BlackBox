@@ -334,14 +334,15 @@ class SQLCog(commands.Cog):
             channel_name = "faq"
             overwrites = {
                 guild.default_role: PermissionOverwrite(send_messages=False),
-                guild.me: PermissionOverwrite(send_messages=True)
+                guild.me: PermissionOverwrite(send_messages=True),
             }
         else:
             table = "TestDiscordAnswers"
             channel_name = "test faq"
             overwrites = {
-                guild.default_role: PermissionOverwrite(read_messages=False, send_messages=False),
-                guild.me: PermissionOverwrite(send_messages=True)
+                guild.default_role: PermissionOverwrite(send_messages=False),
+                guild.me: PermissionOverwrite(send_messages=True),
+                ctx.author: PermissionOverwrite(read_messages=True)
             }
 
         channel = get(guild.text_channels, name=channel_name)

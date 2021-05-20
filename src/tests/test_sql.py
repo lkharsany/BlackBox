@@ -105,17 +105,19 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
-    @test_collector()
-    async def test_FAQ(interface):
-        faq_channel = 845007642644578355
-        await interface.send_message("./FAQ")
-        await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Created")
+#@test_collector()
+async def test_FAQ(interface):
+    faq_channel = 845007642644578355
+    await interface.send_message("./FAQ")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Created")
 
-    @test_collector()
-    async def test_DELFAQ(interface):
-        faq_channel = 845007642644578355
-        message = await interface.send_message("./DELFAQ")
-        await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
+@test_collector()
+async def test_DELFAQ(interface):
+    faq_channel = 845007642644578355
+    message = await interface.send_message("./DELFAQ")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
+
+
 
 # Actually run the bot
 if __name__ == "__main__":

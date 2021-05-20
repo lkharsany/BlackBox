@@ -262,10 +262,9 @@ class SQLCog(commands.Cog):
             else:
                 await ctx.send("No Open Questions. Nice!")
 
-    # Answered command
-    @commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answered')
+    # Answer command
     @commands.cooldown(1, 2)
-    @commands.command(name='Answer')
+    @commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answer')
     # @commands.has_role("")
     async def waitForReply(self, ctx, *, message):
         ansID = message

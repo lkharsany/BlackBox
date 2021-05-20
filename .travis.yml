@@ -1,6 +1,10 @@
 language: python
 python:
 - '3.9'
+services:
+- mysql
+before_install:
+  - sudo mysql -u root --password="" < travis.sql
 install:
 - pip install -r requirements.txt
 env:

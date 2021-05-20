@@ -13,7 +13,7 @@ created_channel = None
 @test_collector()
 async def test_shutdown(interface):
     await interface.send_message("./bye")
-    await interface.get_delayed_reply(1, interface.assert_message_contains, "Shutting Down")
+    await interface.get_delayed_reply(3, interface.assert_message_contains, "Shutting Down")
 
 
 

@@ -4,6 +4,6 @@
 [![Build Status](https://travis-ci.com/lkharsany/BlackBox.svg?branch=main)](https://travis-ci.com/lkharsany/BlackBox)
 
 
-Yay, look its a Discord Bot!
+Yay look its a Discord Bot...
 
-A Discord Bot to help Lecturers and Tutors keep track of questions asked by students.  
+A Discord Bot to help lecturers and tutors keep track of questions asked by students.  

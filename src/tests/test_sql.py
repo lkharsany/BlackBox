@@ -4,36 +4,23 @@ import sys
 import pymysql.cursors
 from distest import TestCollector
 from distest import run_dtest_bot
-from sshtunnel import SSHTunnelForwarder
 from discord import Embed
 import asyncio
 
 
-class DBConnect:
+class TravisDBConnect:
     def __init__(self):
-        self._username = os.getenv('db_username')
-        self._password = os.getenv('db_password')
-        self._ssh_host = os.getenv('ssh_host')
-        self._database = os.getenv('database')
-
-    def _ConnectServer(self):
-        server = SSHTunnelForwarder(
-            (self._ssh_host, 22),
-            ssh_username=self._username,
-            ssh_password=self._password,
-            remote_bind_address=('127.0.0.1', 3306)
-        )
-        return server
+        self._username = "root"
+        self._password = ""
+        self._database = "testDB"
 
     def open(self):
-        self._Server = self._ConnectServer()
-        self._Server.start()
         connection = pymysql.connect(
             host='127.0.0.1',
             user=self._username,
             password=self._password,
             database=self._database,
-            port=self._Server.local_bind_port,
+            port=3306,
             cursorclass=pymysql.cursors.DictCursor)
 
         self.Connection = connection
@@ -41,12 +28,11 @@ class DBConnect:
 
     def close(self):
         self.Connection.close()
-        self._Server.stop()
 
 
 def getQuestionsID(username):
     try:
-        Db = DBConnect()
+        Db = TravisDBConnect()
         conn = Db.open()
         cur = conn.cursor()
         Q = """SELECT * FROM TestDiscordQuestions WHERE username = %s"""
@@ -70,17 +56,17 @@ created_channel = None
 @test_collector()
 async def test_ask(interface):
     Username = 829768047350251530
-    await interface.send_message("./Ask TestDiscordQuestions$!Is this a test question?")
-    await asyncio.sleep(3)
+    await interface.send_message("./Ask Is this a test question?")
+    await asyncio.sleep(1)
     new_ID = getQuestionsID(Username)
     if new_ID != -99:
         await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
+
 @test_collector()
 async def test_who(interface):
-    await asyncio.sleep(3)
     message = await interface.send_message("Testing Query")
     user_id = 829768047350251530
     Question = "Is this a test question?"
@@ -93,21 +79,41 @@ async def test_who(interface):
     embed.add_field(name="Question Asked", value=Question)
     embed.set_footer(text=f"Question ID:  {ID}")
 
-    await interface.assert_reply_embed_equals("./Who TestDiscordQuestions", embed, attributeList)
+    await interface.assert_reply_embed_equals("./Who", embed, attributeList)
 
 
 @test_collector()
-async def test_answered(interface):
+async def test_answer(interface):
     Username = 829768047350251530
+    Question = "Is this a test question?"
     ID = getQuestionsID(Username)
-    await interface.send_message("./Answered " + "TestDiscordQuestions$!" + str(ID))
-    await asyncio.sleep(3)
-    new_ID = getQuestionsID(Username)
-    if new_ID == -99:
-        await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Removed')
-    else:
-        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+    message = await interface.send_message("Testing Answer")
+    member = message.author
 
+    attributeList = ["author", "description"]
+    embed = Embed(color=0xff9999, title="", description=member.mention)
+    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
+    embed.add_field(name="Question Asked", value=Question)
+    embed.set_footer(text=f"Question ID:  {ID}")
+
+    x = await interface.assert_reply_embed_equals(f"./Answer {ID}", embed, attributeList)
+    if x:
+        y = await interface.get_delayed_reply(2, interface.assert_message_equals,
+                                              f"What's the answer? Begin with the phrase \"answer: \"")
+        if y:
+            message = await interface.send_message("answer: yes, yes it is")
+            await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
+
+
+@test_collector()
+async def test_faq(interface):
+    await interface.send_message("./FAQ")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Created")
+
+@test_collector()
+async def test_delfaq(interface):
+    await interface.send_message("./DELFAQ")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
 
 # Actually run the bot
 if __name__ == "__main__":

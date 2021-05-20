@@ -67,6 +67,19 @@ class TravisDBConnect:
     def close(self):
         self.Connection.close()
 
+def addQuestion(table, val):
+    try:
+        # tries to insert values into table.
+        Db = DBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""INSERT INTO {table} (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
+        cur.execute(Q, val)
+        conn.commit()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        return -1
 
 class SQLCog(commands.Cog):
 
@@ -75,44 +88,24 @@ class SQLCog(commands.Cog):
         self.description = "Commands to Add, Display and Remove Questions from a Database"
 
     # Ask command
-    @commands.command(brief=AskBrief,
-                      description="Adds Question to the Database",
-                      usage="<question>",
-                      name='Ask')
+    @commands.command(brief=AskBrief,description="Adds Question to the Database",usage="<question>",name='Ask')
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         user = ctx.message.author.id
-
         curr_date = datetime.now().strftime('%Y-%m-%d')
         curr_time = datetime.now().strftime('%H:%M:%S')
-
-        val = (user, message,curr_date, curr_time)
+        val = (user, message, curr_date, curr_time)
         # used to "override" the table that the question is added to for testing purposes
         if not ctx.message.author.bot:
-            try:
-                # tries to insert values into table.
-                Db = DBConnect()
-                conn = Db.open()
-                cur = conn.cursor()
-                Q = f"""INSERT INTO DiscordQuestions (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
-                cur.execute(Q, val)
-                conn.commit()
-                await ctx.send('Question Added')
-            except pymysql.err as err:
-                print(err)
-
+            table = "DiscordQuestions"
         else:
-            try:
-                # tries to insert values into table.
-                Db = TravisDBConnect()
-                conn = Db.open()
-                cur = conn.cursor()
-                Q = f"""INSERT INTO TestDiscordQuestions (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
-                cur.execute(Q, val)
-                conn.commit()
-                await ctx.send('Question Added')
-            except pymysql.err as err:
-                print(err)
+            table = "TestDiscordQuestions"
+
+        code = addQuestion(table,  val)
+        if code == 1:
+            await ctx.send('Question Added')
+
+
 
     # Who command
     @commands.command(brief="Displays All Questions",
@@ -238,6 +231,7 @@ class SQLCog(commands.Cog):
 
         else:
             await ctx.send("Not a Valid Answered ID")
+
 
 
 def setup(bot):

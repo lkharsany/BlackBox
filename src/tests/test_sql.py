@@ -108,7 +108,7 @@ async def test_answer(interface):
     @test_collector()
     async def test_FAQ(interface):
         faq_channel = 845007642644578355
-        message = await interface.send_message("./FAQ")
+        await interface.send_message("./FAQ")
         await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Created")
 
     @test_collector()

@@ -107,7 +107,7 @@ async def test_answer(interface):
     embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
     embed.add_field(name="Question Asked", value=Question)
     embed.set_footer(text=f"Question ID:  {ID}")
-    x = await interface.assert_reply_embed_equals(f"./Answered {ID}", embed, attributeList)
+    x = await interface.assert_reply_embed_equals(f"./Answer {ID}", embed, attributeList)
     print(x)
 
 

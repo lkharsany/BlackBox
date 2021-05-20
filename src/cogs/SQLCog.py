@@ -376,7 +376,7 @@ class SQLCog(commands.Cog):
         if not ctx.author.bot:
             channel_name = "faq"
         else:
-            channel_name = "test faq"
+            channel_name = "test-faq"
         guild = ctx.guild
 
         channel = get(guild.text_channels, name=channel_name)

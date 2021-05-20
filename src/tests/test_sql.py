@@ -105,12 +105,6 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
-@test_collector()
-async def test_FAQ(interface):
-    faq_channel = 845007642644578355
-    await interface.wait_for_message_in_channel("./FAQ", faq_channel)
-
-
 
 # Actually run the bot
 if __name__ == "__main__":

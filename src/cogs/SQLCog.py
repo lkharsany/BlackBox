@@ -175,10 +175,11 @@ def delQuestion(table, ID, isBot):
 
 
 def createQuestionEmbed(member, question, asked_date, asked_time, ID):
+    asked_date = datetime.strptime(str(asked_date), '%Y-%m-%d').strftime('%d-%m-%y')
     embed = Embed(color=0xff9999, title="", description=member.mention)
     embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-    embed.add_field(name="Question Asked", value=question)
-    embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n")
+    embed.add_field(name="Question Asked", value=question+"\n", inline=False)
+    embed.add_field(name="Asked On", value=str(asked_date) + "\n" + str(asked_time) + "\n", inline=False)
     embed.set_footer(text=f"Question ID:  {str(ID)}")
     return embed
 

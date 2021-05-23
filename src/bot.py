@@ -6,7 +6,7 @@ from pretty_help import PrettyHelp
 
 bot = commands.Bot(command_prefix='./', help_command=PrettyHelp(sort_commands=True, show_index=False))
 
-# NEED TO RUN IT WITH ARGUMENT -t for testing
+# NEED TO RUN IT WITH ARGUMENT -t for Testing
 if (len(sys.argv) - 1) != 0 and sys.argv[1] == "-t":
     from distest.patches import patch_target
     bot = patch_target(bot)

@@ -70,6 +70,10 @@ class BasicCog(commands.Cog):
     async def clear(self, ctx, amount=5):
         await ctx.channel.purge(limit=amount)
 
+    @commands.command(name='Team Name', brief="Give it a try", description="Give it a try")
+    async def scrum(self, ctx):
+        await ctx.send('BlackBox')
+
 
 def setup(bot):
     bot.add_cog(BasicCog(bot))

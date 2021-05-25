@@ -1,0 +1,11 @@
+Sprint 3 Meeting with Pravesh
+Meeting Minutes
+
+Meeting took place on 17th May. Done over text messaging. 
+
+•	Features to be implemented: 
+1.	Bot should display the time of the question asked along with the actual question when viewing unanswered questions.
+2.	Creation of FAQ channel:
+	- A channel to display answered questions
+	- Students can view this channel to make sure they are not asking an already answered question
+	- Need a way of deleting these messages as well.

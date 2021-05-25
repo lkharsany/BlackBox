@@ -38,7 +38,7 @@ class BasicCog(commands.Cog):
     @commands.cooldown(1, 2)
     async def on_message(self, message):
         if message.content.lower() == "hi":
-            await message.channel.send('Hello there')
+            await message.channel.send('Hello there :)')
             await self.bot.process_commands(message)
 
         if message.content.lower() == "ping":

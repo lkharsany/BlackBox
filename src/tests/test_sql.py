@@ -48,6 +48,24 @@ def getQuestionsID(username):
         return -99
 
 
+def getLecturerQuestionsID(username):
+    try:
+        Db = TravisDBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = """SELECT * FROM TestLecturerQuestions WHERE asked_by = %s"""
+        cur.execute(Q, (username,))
+
+        result = cur.fetchone()
+        if result:
+            return result["question_id"]
+        else:
+            return -99
+    except Exception as e:
+        print(e)
+        return -99
+
+
 TESTER = os.getenv('Tester')
 test_collector = TestCollector()
 created_channel = None
@@ -119,6 +137,20 @@ async def test_refer(interface):
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
+
+@test_collector()
+async def test_lecturer(interface):
+    Username = 829768047350251530
+    new_ID = getLecturerQuestionsID(Username)
+    if new_ID != -99:
+        if new_ID != -99:
+            message = await interface.send_message(f"./Lecturer {new_ID}")
+            y = await interface.get_delayed_reply(2, interface.assert_message_equals, f"What's the answer? Begin with the phrase \"answer: \"")
+            if y:
+                message = await interface.send_message("answer: yes, yes it is")
+                await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answer")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
 

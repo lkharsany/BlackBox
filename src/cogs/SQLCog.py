@@ -374,9 +374,6 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
-
-
-
     @commands.command(brief=FAQBrief, description=FAQBrief, name='FAQ')
     # @commands.has_role("")
     async def createChannel(self, ctx, *, isBot=True):
@@ -543,17 +540,19 @@ class SQLCog(commands.Cog):
                     curr_time = datetime.now().strftime('%H:%M:%S')
                     if not isBot:
                         ask_embed = discord.Embed(color=0xff9999, title="", description="Answer")
-                        ask_embed.set_author(name=ctx.author.name, url=discord.Embed.Empty, icon_url=ask_member.avatar_url)
+                        ask_embed.set_author(name=ctx.author.name, url=discord.Embed.Empty,
+                                             icon_url=ask_member.avatar_url)
                         ask_embed.add_field(name="Question Asked", value=question, inline=False)
                         ask_embed.add_field(name="Answer", value=answer, inline=False)
 
                         r_embed = discord.Embed(color=0xff9999, title="", description="Answer")
-                        r_embed.set_author(name=ctx.author.name, url=discord.Embed.Empty, icon_url=ask_member.avatar_url)
+                        r_embed.set_author(name=ctx.author.name, url=discord.Embed.Empty,
+                                           icon_url=ask_member.avatar_url)
                         r_embed.add_field(name="Question Referred", value=question, inline=False)
                         r_embed.add_field(name="Answer", value=answer, inline=False)
-
-                        await ask_member.send(embed=ask_embed)
-                        await refer_member.send(embed =r_embed)
+                        if not isBot:
+                            await ask_member.send(embed=ask_embed)
+                            await refer_member.send(embed=r_embed)
                     val = (asked_by, question, asked_date, asked_time, ans_by, answer, curr_date, curr_time, channel)
 
                     code = addAnswer(ansTable, val, isBot)

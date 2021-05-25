@@ -148,7 +148,7 @@ async def test_lecturer(interface):
             y = await interface.get_delayed_reply(2, interface.assert_message_equals, f"What's the answer? Begin with the phrase \"answer: \"")
             if y:
                 message = await interface.send_message("answer: yes, yes it is")
-                await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answer")
+                await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 

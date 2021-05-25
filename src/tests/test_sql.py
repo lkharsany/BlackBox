@@ -111,7 +111,8 @@ async def test_refer(interface):
     await interface.send_message("./Ask Is this a test question?")
     new_ID = getQuestionsID(Username)
     if new_ID != -99:
-        await interface.assert_message_equals(f"./Refer {new_ID}", "Message Sent to Lecturer")
+        message = await interface.send_message(f"./Refer {new_ID}")
+        await interface.get_delayed_reply(2, interface.assert_message_equals,"Message Sent to Lecturer")
 
 
 

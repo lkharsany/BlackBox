@@ -5,7 +5,7 @@ import pymysql.cursors
 from discord import Embed
 from discord import PermissionOverwrite
 from discord.ext import commands
-from discord.utils import get
+from discord.utils import get, find
 from sshtunnel import SSHTunnelForwarder
 
 AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
@@ -83,7 +83,7 @@ def addQuestion(table, val, isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""INSERT INTO {table} (username, question, question_date, question_time) Values (%s,%s,%s,%s)"""
+        Q = f"""INSERT INTO {table} (username, question, question_date, question_time,channel) Values (%s,%s,%s,%s,%s)"""
         cur.execute(Q, val)
         conn.commit()
         Db.close()
@@ -94,7 +94,7 @@ def addQuestion(table, val, isBot):
         return -1
 
 
-def queryQuestions(table, isBot):
+def queryQuestions(table, isBot, Channel):
     if isBot:
         Db = TravisDBConnect()
     else:
@@ -102,8 +102,8 @@ def queryQuestions(table, isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""Select * FROM {table}"""
-        cur.execute(Q)
+        Q = f"""Select * FROM {table} WHERE channel =%s"""
+        cur.execute(Q, (Channel,))
         result = cur.fetchall()
         Db.close()
         return result
@@ -145,7 +145,7 @@ def addAnswer(table, val, isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""INSERT INTO {table} (asked_by, question, question_date, question_time, answered_by, answer, answer_date, answer_time) Values (%s,%s,%s,%s,%s,%s,%s,%s)"""
+        Q = f"""INSERT INTO {table} (asked_by, question, question_date, question_time, answered_by, answer, answer_date, answer_time,channel) Values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
         cur.execute(Q, val)
         conn.commit()
         Db.close()
@@ -185,7 +185,7 @@ def createQuestionEmbed(member, question, asked_date, asked_time, ID):
     return embed
 
 
-def queryAnswers(table, isBot):
+def queryAnswers(table, isBot, channel):
     try:
         if isBot:
             Db = TravisDBConnect()
@@ -193,8 +193,8 @@ def queryAnswers(table, isBot):
             Db = DBConnect()
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""Select * FROM {table}"""
-        cur.execute(Q)
+        Q = f"""Select * FROM {table} where channel = %s"""
+        cur.execute(Q, (channel,))
         result = cur.fetchall()
         return result
     except pymysql.err as err:
@@ -206,7 +206,6 @@ def createAnswerEmbed(ans_member, question, answer):
     embed = Embed(color=0xff9999, title="", description="")
     embed.add_field(name="Question", value=question, inline=False)
     embed.add_field(name="Answer", value=answer, inline=False)
-    # embed.add_field(name="Answered By", value=ans_member.mention,inline=False)
     embed.set_footer(text=f"Answered By: {ans_member.name}")
     return embed
 
@@ -221,10 +220,11 @@ class SQLCog(commands.Cog):
     @commands.command(brief=AskBrief, description="Adds Question to the Database", usage="<question>", name='Ask')
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
+        guild = ctx.guild.name
         user = ctx.message.author.id
         curr_date = datetime.now().strftime('%Y-%m-%d')
         curr_time = datetime.now().strftime('%H:%M:%S')
-        val = (user, message, curr_date, curr_time)
+        val = (user, message, curr_date, curr_time, guild)
         # used to "override" the table that the question is added to for testing purposes
         isBot = True
         if not ctx.message.author.bot:
@@ -242,6 +242,7 @@ class SQLCog(commands.Cog):
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Who(self, ctx, *, message=None):
+        guild = ctx.guild.name
         # used to "override" the table that the question is added to for testing purposes
         isBot = True
         if not ctx.author.bot:
@@ -249,7 +250,7 @@ class SQLCog(commands.Cog):
             isBot = False
         else:
             table = "TestDiscordQuestions"
-        result = queryQuestions(table, isBot)
+        result = queryQuestions(table, isBot, guild)
         if result != -1:
             if len(result) > 0:
                 for r in result:
@@ -258,8 +259,10 @@ class SQLCog(commands.Cog):
                     question = r["question"]
                     asked_date = r["question_date"]
                     asked_time = r["question_time"]
+                    channel = r["channel"]
                     member = await ctx.bot.fetch_user(user_id)
                     embed = createQuestionEmbed(member, question, asked_date, asked_time, ID)
+                    embed.add_field(name="Channel", value=channel, inline=False)
                     await ctx.send(embed=embed)
             else:
                 await ctx.send("No Open Questions. Nice!")
@@ -269,6 +272,7 @@ class SQLCog(commands.Cog):
     @commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answer')
     # @commands.has_role("")
     async def waitForReply(self, ctx, *, message):
+        guild = ctx.guild.name
         ansID = message
         if ansID.isdigit():
             ansID = int(ansID)
@@ -311,7 +315,7 @@ class SQLCog(commands.Cog):
                         await asked_member.send(f"You asked: {question}  \n Answer: {answer}  \n"
                                                 f" Answered by:{answered_member.mention}")
 
-                    val = (asked_by, question, asked_date, asked_time, ans_by, answer, curr_date, curr_time)
+                    val = (asked_by, question, asked_date, asked_time, ans_by, answer, curr_date, curr_time, guild)
                     code = addAnswer(ansTable, val, isBot)
                     if code == 1:
                         delCode = delQuestion(qTable, ID, isBot)
@@ -321,7 +325,7 @@ class SQLCog(commands.Cog):
                             if not isBot:
                                 await ctx.invoke(self.bot.get_command('FAQ'), isBot=isBot)
         else:
-            await ctx.send("Not a Valid Answered ID")
+            await ctx.send("Not a Valid Question ID")
 
     @commands.command(brief=FAQBrief, description=FAQBrief, name='FAQ')
     # @commands.has_role("")
@@ -352,7 +356,7 @@ class SQLCog(commands.Cog):
         else:
             channel = await guild.create_text_channel(channel_name, overwrites=overwrites)
 
-        result = queryAnswers(table, isBot)
+        result = queryAnswers(table, isBot, guild.name)
         if result != -1:
             if len(result) > 0:
                 for r in result:
@@ -375,7 +379,6 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Updating FAQ")
 
-
     @commands.command(name='DELFAQ')
     # @commands.has_role("")
     async def delChannel(self, ctx):
@@ -389,6 +392,51 @@ class SQLCog(commands.Cog):
         if channel:
             await channel.delete()
             await ctx.send("FAQ Channel Deleted")
+
+    @commands.command(name='Refer')
+    # @commands.has_role("")
+    async def referQuestion(self, ctx, *, message):
+        guild = ctx.guild.name
+        author = ctx.author
+        ansID = message
+        roleName = "sudo dev."
+        if ansID.isdigit():
+            ansID = int(ansID)
+            isBot = True
+
+            if not ctx.author.bot:
+                qTable = "DiscordQuestions"
+                isBot = False
+            else:
+                qTable = "TestDiscordQuestions"
+
+            role = find(lambda r: r.name == roleName, ctx.guild.roles)
+            lecturer = None
+
+            for user in ctx.guild.members:
+                if role in user.roles:
+                    lecturer = user
+
+            if lecturer is not None:
+                lecturer_id = lecturer.id
+                result = getQuestionRow(qTable, ansID, isBot)
+                if result != -1:
+                    ID = result['id']
+                    asked_by = int(result["username"])
+                    question = result["question"]
+                    asked_date = result["question_date"]
+                    asked_time = result["question_time"]
+
+                    member = await ctx.bot.fetch_user(asked_by)
+                    embed = createQuestionEmbed(member, question, asked_date, asked_time, ID)
+                    embed.add_field(name="Referred By", value=author.name, inline=False)
+                    embed.add_field(name="Server", value=ctx.guild.name, inline=False)
+                    await lecturer.send(embed=embed)
+
+            # DEAL WITH RESPONSE FROM LECTURER
+
+        else:
+            await ctx.send("Not a Valid Question ID")
 
 
 def setup(bot):

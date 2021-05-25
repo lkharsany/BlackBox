@@ -190,7 +190,6 @@ def createQuestionEmbed(member, question, asked_date, asked_time, ID):
 
 
 def queryAnswers(table, isBot, channel):
-    print(channel)
     try:
         if isBot:
             Db = TravisDBConnect()
@@ -405,7 +404,6 @@ class SQLCog(commands.Cog):
 
         result = queryAnswers(table, isBot, guild.id)
         if result != -1:
-            print(result)
             if len(result) > 0:
                 for r in result:
                     ID = r['id']
@@ -506,7 +504,7 @@ class SQLCog(commands.Cog):
             else:
                 ansTable = "TestDiscordAnswers"
                 qTable = "TestDiscordQuestions"
-                rTable = "LecturerQuestions"
+                rTable = "TestLecturerQuestions"
 
             result = getReferredQuestionRow(rTable, ansID, isBot)
 

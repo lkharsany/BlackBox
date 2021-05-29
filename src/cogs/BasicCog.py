@@ -34,9 +34,9 @@ class BasicCog(commands.Cog):
 
     # MONITORS ALL MESSAGES AND IF CERTAIN PHRASES ARE SAID IT WILL RESPOND.
     # CAN ONLY HAVE ONE LISTENERS (PER COG?)
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_message")
     @commands.cooldown(1, 2)
-    async def on_message(self, message):
+    async def basicListen(self, message):
         if message.content.lower() == "hi":
             await message.channel.send('Hello there :)')
             await self.bot.process_commands(message)

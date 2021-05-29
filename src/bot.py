@@ -4,6 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from pretty_help import PrettyHelp
 
+
 bot = commands.Bot(command_prefix='./', help_command=PrettyHelp(sort_commands=True, show_index=False))
 
 # NEED TO RUN IT WITH ARGUMENT -t for testing

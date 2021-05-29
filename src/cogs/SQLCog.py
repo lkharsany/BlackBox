@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
+from multiprocessing import get_context
+import csv
 
 import pymysql.cursors
-from discord import Embed
+from discord import Embed, client
 from discord import PermissionOverwrite
 from discord.ext import commands
 from discord.utils import get
@@ -211,6 +213,47 @@ def createAnswerEmbed(ans_member, question, answer):
     return embed
 
 
+def AddMessageCount(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+
+        Q = f"""SELECT count(*) FROM {table} WHERE discord_username = %s """
+        cur.execute(Q, val[0])
+
+        newVal = [val[1], str(val[0])]
+        doesUserExist = cur.fetchone()
+        doesUserExist = doesUserExist.get('count(*)')
+        if(doesUserExist>0):
+            if(val[2] == 1):
+                Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s, record_count_20 = record_count_20 +1 WHERE %s = discord_username"""
+                cur.execute(Q, newVal)
+            else:
+                Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s WHERE discord_username = %s """
+                cur.execute(Q, newVal)
+            conn.commit()
+        else:
+            if (val[2] == 1):
+                val = [val[0], 1, val[1], 1]
+                Q = f"""INSERT INTO {table} (discord_username, record_count, last_message_date,record_count_20) Values (%s,%s,%s,%s)"""
+                cur.execute(Q, val)
+            else:
+                val = [val[0], 1, val[1], 0]
+                Q = f"""INSERT INTO {table} (discord_username, record_count, last_message_date,record_count_20) Values (%s,%s,%s,%s)"""
+                cur.execute(Q, val)
+            conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -389,6 +432,38 @@ class SQLCog(commands.Cog):
         if channel:
             await channel.delete()
             await ctx.send("FAQ Channel Deleted")
+
+    @commands.Cog.listener("on_message")
+    @commands.cooldown(1, 2)
+    async def on_messageSQL(self, message):
+        #ctx = client.get_channel
+        user = message.author.id
+        curr_date = datetime.now().strftime('%Y-%m-%d')
+        if len(message.content) > 20:
+            biggerthan20 = 1
+        else:
+            biggerthan20 = 0
+        val = (user, curr_date, biggerthan20)
+        isBot = True
+        if not message.author.bot:
+            table = "student_message_log"
+            isBot = False
+        else:
+            table = "teststudent_message_log"
+        code = AddMessageCount(table, val, isBot)
+        if (code == 1) and (isBot == True) and (message.content == "this is add count test"):
+            await message.channel.send('Message Added')
+            await self.bot.process_commands(message)
+
+    @commands.command(name='stats')
+    async def generateCSV(self, ctx):
+        #TO DO
+        print()
+
+
+
+
+
 
 
 def setup(bot):

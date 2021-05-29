@@ -1,0 +1,26 @@
+Sprint Planning Meeting:
+
+The team has decided on which product backlog items will be converted into working products during the sprint. They are as follows:
+-Show time asked for unanswered questions when user uses command to see who asked questions.
+-Create a FAQ channel which shows all answered questions.
+
+These items were then split into individual tasks and divided amongst the development team.
+They are split as follows.
+
+Nabeel Uppel and Lindani Dlamini:
+- Assigned task of writing code to show time for unanswered questions.
+
+Ahmed Kharsany and Neeloufah Alli:
+-Assigned task of creating FAQ channel
+
+Zaneli Steenveldt and Khorommbi Ganyane:
+-Management of database.
+
+Amen Moipushi:
+-Assigned task of keeping track of who is doing what at each daily sprint.
+
+Matthew Simon:
+-Assigned task of writing the user stories and acceptance tests
+-Assigned task of keeping track of meetings.
+
+The group has agreed to describe what they are doing each day in the WhatsApp groupchat to make sure all the requirements are met in time.

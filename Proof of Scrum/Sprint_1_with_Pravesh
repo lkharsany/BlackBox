@@ -1,0 +1,26 @@
+MEETING 1 WITH PRAVESH:
+
+Doesn't care about language.
+We make most of the decsions
+He's acting like a customer.
+Emphsise flexiablity.
+Everyone works one everything.
+
+Make each branch on Github a separate feature.
+
+What needs to be done?
+1. tutor queue - a bot responds to a command and add message/question to a queue to the tutor to read. (Use a stack?) Send DM to the person to the who asked the question and the answer.
+
+2. lectural deferal - same as above but the tutor will asks question to lecturer and send answer to student, tutor and inital group. 
+
+Main Feature but not urgent:
+tut group manager.
+divide total students by total tutors.
+
+Code remover - delete all code. files and text message
+
+First Sprint:
+working bot
+monitor message and respond.
+send messages.
+

@@ -1,0 +1,10 @@
+Sprint 2 Meeting with Pravesh
+Meeting Minutes
+
+•	Features to be implemented: 
+1.	Remove files with certain extensions i.e coding files e.g .py, .cpp, etc.
+2.	Remove images from group
+3.	DM must be sent to user when their file or image is deleted telling them to contact tutors directly should they need help
+    with code and to refrain from sending files or images on the group.
+4.	Set up database for the bot 
+5.	Get bot to add to the database   

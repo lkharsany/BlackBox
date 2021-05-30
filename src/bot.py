@@ -14,7 +14,8 @@ else:
     load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
+
 bot.load_extension("cogs.SQLCog")
 bot.load_extension("cogs.BasicCog")
-bot.load_extension("cogs.DeleteCog")
+bot.load_extension("cogs.ReactionCog")
 bot.run(TOKEN)

@@ -48,6 +48,24 @@ def getQuestionsID(username):
         return -99
 
 
+def getLecturerQuestionsID(username):
+    try:
+        Db = TravisDBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = """SELECT * FROM TestLecturerQuestions WHERE asked_by = %s"""
+        cur.execute(Q, (username,))
+
+        result = cur.fetchone()
+        if result:
+            return result["question_id"]
+        else:
+            return -99
+    except Exception as e:
+        print(e)
+        return -99
+
+
 TESTER = os.getenv('Tester')
 test_collector = TestCollector()
 created_channel = None
@@ -106,14 +124,47 @@ async def test_answer(interface):
 
 
 @test_collector()
+async def test_refer(interface):
+    Username = 829768047350251530
+    await interface.send_message("./Ask Is this a test question?")
+    new_ID = getQuestionsID(Username)
+    if new_ID != -99:
+        if new_ID != -99:
+            x = await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
+            if x:
+                message = await interface.send_message(f"./Refer {new_ID}")
+                await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Sent to Lecturer")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+
+@test_collector()
+async def test_lecturer(interface):
+    Username = 829768047350251530
+    new_ID = getLecturerQuestionsID(Username)
+    if new_ID != -99:
+        if new_ID != -99:
+            message = await interface.send_message(f"./Lecturer {new_ID}")
+            y = await interface.get_delayed_reply(2, interface.assert_message_equals, f"What's the answer? Begin with the phrase \"answer: \"")
+            if y:
+                message = await interface.send_message("answer: yes, yes it is")
+                await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+
+
+@test_collector()
 async def test_faq(interface):
     await interface.send_message("./FAQ")
     await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Created")
+
 
 @test_collector()
 async def test_delfaq(interface):
     await interface.send_message("./DELFAQ")
     await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
+
 
 # Actually run the bot
 if __name__ == "__main__":

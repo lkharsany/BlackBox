@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from multiprocessing import get_context
 import csv
+import pandas as pd
 
 import pymysql.cursors
 from discord import Embed, client
@@ -228,8 +229,8 @@ def AddMessageCount(table, val, isBot):
         newVal = [val[1], str(val[0])]
         doesUserExist = cur.fetchone()
         doesUserExist = doesUserExist.get('count(*)')
-        if(doesUserExist>0):
-            if(val[2] == 1):
+        if (doesUserExist > 0):
+            if (val[2] == 1):
                 Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s, record_count_20 = record_count_20 +1 WHERE %s = discord_username"""
                 cur.execute(Q, newVal)
             else:
@@ -418,7 +419,6 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Updating FAQ")
 
-
     @commands.command(name='DELFAQ')
     # @commands.has_role("")
     async def delChannel(self, ctx):
@@ -436,14 +436,16 @@ class SQLCog(commands.Cog):
     @commands.Cog.listener("on_message")
     @commands.cooldown(1, 2)
     async def on_messageSQL(self, message):
-        #ctx = client.get_channel
-        user = message.author.id
+        # ctx = client.get_channel
+        userID = message.author.id
+        username = client.get_user(message.author.id)
         curr_date = datetime.now().strftime('%Y-%m-%d')
+        serverID = client.message.guild.id
         if len(message.content) > 20:
             biggerthan20 = 1
         else:
             biggerthan20 = 0
-        val = (user, curr_date, biggerthan20)
+        val = (userID, curr_date, biggerthan20,username,)
         isBot = True
         if not message.author.bot:
             table = "student_message_log"
@@ -457,13 +459,24 @@ class SQLCog(commands.Cog):
 
     @commands.command(name='stats')
     async def generateCSV(self, ctx):
-        #TO DO
-        print()
+        isBot = True
+        if not ctx.author.bot:
+            table = "student_message_log"
+            isBot = False
+        else:
+            table = "teststudent_message_log"
+        if isBot:
+            Db = TravisDBConnect()
+        else:
+            Db = DBConnect()
+        conn = Db.open()
+        cur = conn.cursor()
 
+        sql_q = pd.read_sql_query('''select * from student_message_log ''', conn)
+        df = pd.DataFrame(sql_q)
+        df.to_csv(r'C:\Users\Matthew\PycharmProjects\BBNew\src\Gstats.csv')
 
-
-
-
+        await ctx.send(sql_q)
 
 
 def setup(bot):

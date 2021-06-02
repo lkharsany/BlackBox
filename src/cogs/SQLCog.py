@@ -258,6 +258,76 @@ def getReferredQuestionRow(table, ID, isBot):
         return -1
 
 
+def addReaction(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+
+        Q = f"""SELECT count(*) FROM {table} WHERE message_id = %s"""
+        cur.execute(Q, val[0])
+
+        doesMsgExist = cur.fetchone()
+        doesMsgExist = doesMsgExist.get('count(*)')
+
+        if(doesMsgExist > 0):
+
+            if (val[3] == 1):
+                Q = f"""UPDATE {table} SET good_reactions = good_reactions + 1, total_reactions = total_reactions + 1 WHERE message_id = %s """
+                cur.execute(Q, val[0])
+            if (val[4] == 1):
+                Q = f"""UPDATE {table} SET bad_reactions = bad_reactions + 1, total_reactions = total_reactions + 1 WHERE message_id = %s """
+                cur.execute(Q, val[0])
+            if (val[5] == 1):
+                Q = f"""UPDATE {table} SET other_reactions = other_reactions + 1, total_reactions = total_reactions + 1 WHERE message_id = %s """
+                cur.execute(Q, val[0])
+        else:
+            Q = f"""INSERT INTO {table} (message_id, message, author, good_reaction, bad_reaction, other_reaction, total_raction) Values (%s,%s,%s,%s,%s,%s,%s)"""
+            cur.execute(Q, val)
+
+        conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+def removeReaction(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+
+
+        if (val[1] == 0):
+            Q = f"""UPDATE {table} SET good_reactions = good_reactions - 1, total_reactions = total_reactions - 1 WHERE message_id = %s """
+            cur.execute(Q, val[0])
+        if (val[1] == 1):
+            Q = f"""UPDATE {table} SET bad_reactions = bad_reactions - 1, total_reactions = total_reactions - 1 WHERE message_id = %s """
+            cur.execute(Q, val[0])
+        if (val[1] == 2):
+            Q = f"""UPDATE {table} SET other_reactions = other_reactions - 1, total_reactions = total_reactions - 1 WHERE message_id = %s """
+            cur.execute(Q, val[0])
+
+        conn.commit()
+        Db.close()
+        return 1
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -563,6 +633,104 @@ class SQLCog(commands.Cog):
 
         else:
             await ctx.send("Not a Valid Question ID")
+
+    @commands.command(name='Reactions', brief="send reactions", description="Sends a csv file with reactions data")
+    @commands.cooldown(1, 2)
+    async def cool_bot(self, ctx):
+        await ctx.send("CSV", file=discord.File('/home/neeloufah/PycharmProjects/BlackBox/src/cogs/Reactions.csv'))
+
+    # Detects when a reaction ia added to a message
+    @commands.Cog.listener()
+    @commands.cooldown(1, 2)
+    async def on_raw_reaction_add(self, payload):
+
+        Good = ['👍', '💯', '🙌', '👏']
+        Bad = ['👎', '😭', '😕']
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        user = await self.bot.fetch_user(payload.user_id)
+        emoji = str(payload.emoji)
+        print(message.content)
+        print(emoji)
+        #guild = payload.guild.id
+        #print(guild)
+
+        info = []
+        info.append(message.id)
+        info.append(message.content)
+        info.append(user.id)
+        if emoji in Good:
+            info.append(1)
+        else:
+            info.append(0)
+
+        if emoji in Bad:
+            info.append(1)
+        else:
+            info.append(0)
+        if emoji not in Good and emoji not in Bad:
+            info.append(1)
+        else:
+            info.append(0)
+
+        info.append(1)
+
+        print('info:', info)
+
+
+        member = payload.member
+
+        isBot = True
+
+        if not member.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        code = addReaction(table, info, isBot)
+        if(code == 1):
+            await channel.send('Reaction has been added to message')
+
+
+
+
+    @commands.Cog.listener()
+    @commands.cooldown(1, 2)
+    async def on_raw_reaction_remove(self, payload):
+
+        Good = ['👍', '💯', '🙌', '👏']
+        Bad = ['👎', '😭', '😕']
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        user = await self.bot.fetch_user(payload.user_id)
+        emoji = str(payload.emoji)
+        print(message.content)
+        print(emoji)
+
+
+
+        if(emoji in Good):
+            val = (message.id, 0)
+        if (emoji in Bad):
+            val = (message.id, 1)
+        if (emoji not in Good and emoji not in Bad):
+            val = (message.id, 2)
+
+
+        isBot = True
+
+        if not user.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        code = removeReaction(table, val, isBot)
+        if (code == 1):
+            await channel.send('Reaction has been removed from message')
 
 
 def setup(bot):

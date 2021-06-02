@@ -31,6 +31,20 @@ CREATE TABLE IF NOT EXISTS TestDiscordAnswers
     `channel` varchar(30) not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS TestDiscordReactions
+(
+    `id` int(6) unsigned auto_increment primary key,
+    `message_id` varchar(30)  not null,
+    `message` varchar(255) not null,
+    `author` varchar(255) not null,
+    `good_reaction` int(5)  not null,
+
+    `bad_reaction` int(5)   not null,
+    `other_reaction` int(5)  not null,
+    `total_reaction` int(5) not null,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 
 CREATE TABLE IF NOT EXISTS TestLecturerQuestions
 (

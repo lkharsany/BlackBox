@@ -96,9 +96,9 @@ async def test_statsSent(interface):
         isSame = False
 
     if isSame:
+        print("entereddddddddd")
         await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
     else:
-        #print(update.readlines())
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 @test_collector()

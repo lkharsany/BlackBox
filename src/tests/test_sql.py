@@ -73,6 +73,28 @@ created_channel = None
 
 
 @test_collector()
+async def test_statsSent(interface):
+    await interface.send_message("Message added test")
+    await interface.send_message("./stats")
+
+    with open('/src/cogs/testGstats.csv', 'r') as t1, open('/src/tests/testComparison.csv', 'r') as t2:
+        fileone = t1.readlines()
+        filetwo = t2.readlines()
+
+    with open('/src/tests/update.csv', 'w') as outFile:
+        for line in filetwo:
+            if line not in fileone:
+                outFile.write(line)
+
+    with open('/src/tests/update.csv', 'r') as update:
+        num_lines = sum(1 for line in update)
+        if num_lines == 0:
+            await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
+        else:
+            print(update.readlines())
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+@test_collector()
 async def test_ask(interface):
     Username = 829768047350251530
     await interface.send_message("./Ask Is this a test question?")
@@ -167,27 +189,6 @@ async def test_delfaq(interface):
     await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
 
 
-@test_collector()
-async def test_statsSent(interface):
-    await interface.send_message("Message added test")
-    await interface.send_message("./stats")
-
-    with open('./testGstats.csv', 'r') as t1, open('../testComparison.csv', 'r') as t2:
-        fileone = t1.readlines()
-        filetwo = t2.readlines()
-
-    with open('./update.csv', 'w') as outFile:
-        for line in filetwo:
-            if line not in fileone:
-                outFile.write(line)
-
-    with open('./update.csv', 'r') as update:
-        num_lines = sum(1 for line in update)
-        if num_lines == 0:
-            await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
-        else:
-            print(update.readlines())
-            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
 # Actually run the bot

@@ -6,6 +6,7 @@ from distest import TestCollector
 from distest import run_dtest_bot
 from discord import Embed
 import asyncio
+import pandas as pd
 
 
 class TravisDBConnect:
@@ -145,13 +146,13 @@ async def test_lecturer(interface):
     if new_ID != -99:
         if new_ID != -99:
             message = await interface.send_message(f"./Lecturer {new_ID}")
-            y = await interface.get_delayed_reply(2, interface.assert_message_equals, f"What's the answer? Begin with the phrase \"answer: \"")
+            y = await interface.get_delayed_reply(2, interface.assert_message_equals,
+                                                  f"What's the answer? Begin with the phrase \"answer: \"")
             if y:
                 message = await interface.send_message("answer: yes, yes it is")
                 await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-
 
 
 @test_collector()
@@ -164,6 +165,29 @@ async def test_faq(interface):
 async def test_delfaq(interface):
     await interface.send_message("./DELFAQ")
     await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
+
+
+@test_collector()
+async def test_statsSent(interface):
+    await interface.send_message("Message added test")
+    await interface.send_message("./stats")
+
+    with open('./testGstats.csv', 'r') as t1, open('./testComparison.csv', 'r') as t2:
+        fileone = t1.readlines()
+        filetwo = t2.readlines()
+
+    with open('./update.csv', 'w') as outFile:
+        for line in filetwo:
+            if line not in fileone:
+                outFile.write(line)
+
+    with open('./update.csv', 'r') as update:
+        num_lines = sum(1 for line in update)
+        if num_lines == 0:
+            await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
+        else:
+            print(update.readlines())
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
 # Actually run the bot

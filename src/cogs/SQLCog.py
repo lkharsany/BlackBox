@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-
+from discord import client, Attachment
+import pandas as pd
 import pymysql.cursors
 import discord
 from discord.ext import commands
@@ -254,6 +255,52 @@ def getReferredQuestionRow(table, ID, isBot):
             return -1
     except Exception as e:
         print(e)
+        Db.close()
+        return -1
+
+
+def AddMessageCount(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Val = [val[0], val[4]]
+        Q = f"""SELECT count(*) FROM {table} WHERE discord_id = %s AND server_id = %s """
+        cur.execute(Q, Val)
+
+        newVal = [val[2], str(val[0]), str(val[4])]
+        doesUserExist = cur.fetchone()
+        doesUserExist = doesUserExist.get('count(*)')
+        if doesUserExist > 0:
+            if val[3] == 1:
+                Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s, record_count_20 = 
+                record_count_20 +1 WHERE  %s = discord_id AND server_id = %s """
+                cur.execute(Q, newVal)
+            else:
+                Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s WHERE 
+                discord_id = %s and server_id = %s """
+                cur.execute(Q, newVal)
+            conn.commit()
+        else:
+            if val[3] == 1:
+                val = [val[0], val[1], 1, val[2], 1, val[4]]
+                Q = f"""INSERT INTO {table} (discord_id, discord_username, record_count, last_message_date,
+                record_count_20, server_id) Values (%s,%s,%s,%s,%s,%s) """
+                cur.execute(Q, val)
+            else:
+                val = [val[0], val[1], 1, val[2], 0, val[4]]
+                Q = f"""INSERT INTO {table} (discord_id, discord_username, record_count, last_message_date,
+                record_count_20, server_id) 
+                Values (%s,%s,%s,%s,%s,%s) """
+                cur.execute(Q, val)
+            conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
         Db.close()
         return -1
 
@@ -563,6 +610,62 @@ class SQLCog(commands.Cog):
 
         else:
             await ctx.send("Not a Valid Question ID")
+
+    @commands.Cog.listener("on_message")
+    @commands.cooldown(1, 2)
+    async def on_messageSQL(self, message):
+        userID = message.author.id
+        username = str(self.bot.get_user(userID))
+        curr_date = datetime.now().strftime('%Y-%m-%d')
+        serverID = message.guild.id
+        if len(message.content) > 20:
+            biggerthan20 = 1
+        else:
+            biggerthan20 = 0
+        val = (userID, username, curr_date, biggerthan20, serverID)
+        isBot = True
+        if not message.author.bot:
+            table = "student_message_log"
+            isBot = False
+        else:
+            table = "teststudent_message_log"
+        code = AddMessageCount(table, val, isBot)
+        if (code == 1) and (isBot == True) and (message.content == "Message added test"):
+            await message.channel.send('Message Added')
+            await self.bot.process_commands(message)
+
+    @commands.command(name='stats')
+    async def generateCSV(self, ctx):
+        isBot = True
+        if not ctx.author.bot:
+            table = "student_message_log"
+            isBot = False
+            Db = DBConnect()
+        else:
+            table = "teststudent_message_log"
+            Db = TravisDBConnect()
+
+        conn = Db.open()
+
+        serverID = ctx.guild.id
+
+        if isBot:
+            sql_q = pd.read_sql_query(
+                f'''select discord_id,discord_username,record_count,record_count_20 from {table} where 
+                   server_id = {serverID} ''',
+                conn)
+            df = pd.DataFrame(sql_q)
+            df.to_csv(r'./testGstats.csv', index=False, header=True)
+        else:
+            sql_q = pd.read_sql_query(
+                f'''select discord_id,discord_username,record_count,last_message_date,record_count_20 from {table} where 
+                   server_id = {serverID} ''',
+                conn)
+            df = pd.DataFrame(sql_q)
+            df.to_csv(r'./Gstats.csv', index=False, header=True)
+            await ctx.message.author.send(file=discord.File('./Gstats.csv'))
+
+        await ctx.message.channel.send("General Stats file sent.")
 
 
 def setup(bot):

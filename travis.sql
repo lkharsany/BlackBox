@@ -45,3 +45,15 @@ CREATE TABLE IF NOT EXISTS TestLecturerQuestions
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+CREATE TABLE IF NOT EXISTS teststudent_message_log
+(
+`id` int(6) auto_increment primary key,
+`discord_id` varchar(50),
+`discord_username` varchar(50),
+`record_count` int,
+`last_message_date`` date,
+`record_count_20` int,
+`server_id`` varchar(50)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

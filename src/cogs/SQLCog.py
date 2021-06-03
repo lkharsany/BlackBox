@@ -651,12 +651,13 @@ class SQLCog(commands.Cog):
         conn = Db.open()
 
         serverID = ctx.guild.id
+        discordID = 829768047350251530
         print(table)
         if isBot:
             #print(table)
             sql_q = pd.read_sql_query(
                 f'''select discord_id,discord_username from {table} where 
-                   server_id = {serverID} ''',
+                   server_id = {serverID} and discord_id = {discordID}''',
                 conn)
             df = pd.DataFrame(sql_q)
             df.to_csv(r'src/cogs/testGstats.csv', index=False, header=True)

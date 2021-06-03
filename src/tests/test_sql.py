@@ -77,16 +77,16 @@ async def test_statsSent(interface):
     await interface.send_message("Message added test")
     await interface.send_message("./stats")
 
-    with open('/src/cogs/testGstats.csv', 'r') as t1, open('/src/tests/testComparison.csv', 'r') as t2:
+    with open('src/cogs/testGstats.csv', 'r') as t1, open('src/tests/testComparison.csv', 'r') as t2:
         fileone = t1.readlines()
         filetwo = t2.readlines()
 
-    with open('/src/tests/update.csv', 'w') as outFile:
+    with open('src/tests/update.csv', 'w') as outFile:
         for line in filetwo:
             if line not in fileone:
                 outFile.write(line)
 
-    with open('/src/tests/update.csv', 'r') as update:
+    with open('src/tests/update.csv', 'r') as update:
         num_lines = sum(1 for line in update)
         if num_lines == 0:
             await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")

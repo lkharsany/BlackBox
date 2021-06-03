@@ -108,7 +108,6 @@ async def test_statsSentCount(interface):
     await interface.send_message("./stats")
 
     with open('src/cogs/testGstats.csv', 'r') as t1, open('src/tests/testComparison.csv', 'r') as t2:
-        print()
         fileone = t1.readlines()
         filetwo = t2.readlines()
 
@@ -116,9 +115,15 @@ async def test_statsSentCount(interface):
     sizeOne = len(fileone)
     sizeTwo = len(filetwo)
 
+    print(sizeOne)
+    print()
+    print(sizeTwo)
+
     if sizeOne == sizeTwo:
         for i, j in zip(range(sizeOne), range(sizeTwo)):
             if fileone[i] != filetwo[j]:
+                print(fileone[i])
+                print(filetwo[i])
                 isSame = False
     else:
         isSame = False

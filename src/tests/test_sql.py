@@ -172,7 +172,7 @@ async def test_statsSent(interface):
     await interface.send_message("Message added test")
     await interface.send_message("./stats")
 
-    with open('./testGstats.csv', 'r') as t1, open('./testComparison.csv', 'r') as t2:
+    with open('./testGstats.csv', 'r') as t1, open('../testComparison.csv', 'r') as t2:
         fileone = t1.readlines()
         filetwo = t2.readlines()
 

@@ -629,10 +629,13 @@ class SQLCog(commands.Cog):
             isBot = False
         else:
             table = "teststudent_message_log"
-        code = AddMessageCount(table, val, isBot)
-        if (code == 1) and (isBot == True) and (message.content == "Message added test"):
-            await message.channel.send('Message Added')
-            await self.bot.process_commands(message)
+
+        if (isBot == True) and (message.content == "Message added test"):
+            code = AddMessageCount(table, val, isBot)
+            if code == 1:
+                await message.channel.send('Message Added')
+        else:
+            code = AddMessageCount(table, val, isBot)
 
     @commands.command(name='stats')
     async def generateCSV(self, ctx):

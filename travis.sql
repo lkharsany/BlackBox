@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS teststudent_message_log
 `discord_id` varchar(50),
 `discord_username` varchar(50),
 `record_count` int,
-`last_message_date`` date,
+`last_message_date` date,
 `record_count_20` int,
 `server_id` varchar(50)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -275,6 +275,7 @@ def AddMessageCount(table, val, isBot):
         doesUserExist = cur.fetchone()
         doesUserExist = doesUserExist.get('count(*)')
         if doesUserExist > 0:
+            print("testtesttest")
             if val[3] == 1:
                 Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s, record_count_20 = 
                 record_count_20 +1 WHERE  %s = discord_id AND server_id = %s """
@@ -655,7 +656,6 @@ class SQLCog(commands.Cog):
         serverID = ctx.guild.id
         discordID = 829768047350251530
         if isBot:
-            #print(table)
             sql_q = pd.read_sql_query(
                 f'''select discord_id,discord_username from {table} where 
                    server_id = {serverID} ''',

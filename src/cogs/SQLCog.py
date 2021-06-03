@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import DefaultDict
 
 import pymysql.cursors
 import discord
@@ -16,6 +17,7 @@ AnsweredDesc = "Removes Answered Question from Database and adds It to the answe
                "Allocated Roles Can Access This Command "
 
 FAQBrief = "Creates a FAQ Channel with all previously answered questions"
+userParticipation = "Shows sum of questions asked and questions answered by a user to get a sense of their participation"
 
 
 class DBConnect:
@@ -54,17 +56,20 @@ class DBConnect:
 
 
 class TravisDBConnect:
+
     def __init__(self):
-        self._username = "root"
-        self._password = ""
-        self._database = "testDB"
+        self._username = "mleendox2"
+        self._password = "lastpass"
+        self._database = "botdb"
+        self._auth_plugin='mysql_native_password'
 
     def open(self):
         connection = pymysql.connect(
-            host='127.0.0.1',
+            host='localhost',
             user=self._username,
             password=self._password,
             database=self._database,
+            auth_plugin=self._auth_plugin,
             port=3306,
             cursorclass=pymysql.cursors.DictCursor)
 
@@ -256,6 +261,73 @@ def getReferredQuestionRow(table, ID, isBot):
         print(e)
         Db.close()
         return -1
+
+# for question stats
+def questionStats(isBot):
+
+    if isBot:
+        Db = TravisDBConnect()
+
+        try:
+            conn = Db.open()
+            cur = conn.cursor()
+
+            Q1 = f"""SELECT QUESTION_AUTHOR, COUNT(*) as COUNT 
+                    FROM TEST_QUESTION 
+                    GROUP BY QUESTION_AUTHOR 
+                    ORDER BY COUNT DESC"""
+            cur.execute(Q1)
+            result1 = cur.fetchall()
+
+            Q2 = f"""SELECT ANSWERED_BY, COUNT(*) as COUNT 
+                    FROM TEST_ANSWER
+                    GROUP BY ANSWERED_BY 
+                    ORDER BY COUNT DESC"""
+            cur.execute(Q2)
+            result2 = cur.fetchall()
+
+            Db.close()
+            
+            if len(result1) == 0: return [result2]
+            elif len(result2) == 0: return [result1]
+            else: return [result1, result2]
+
+        except pymysql.err as err: 
+            print(err)
+            Db.close()
+            return -1
+
+    else:
+        Db = DBConnect()
+
+        try:
+            conn = Db.open()
+            cur = conn.cursor()
+
+            Q1 = f"""SELECT username, COUNT(*) as COUNT 
+                    FROM DiscordQuestions 
+                    GROUP BY username 
+                    ORDER BY count DESC"""
+            cur.execute(Q1)
+            result1 = cur.fetchall()
+
+            Q2 = f"""SELECT answered_by, COUNT(*) as COUNT 
+                    FROM DiscordAnswers
+                    GROUP BY answered_by 
+                    ORDER BY count DESC"""
+            cur.execute(Q2)
+            result2 = cur.fetchall()
+
+            Db.close()
+            
+            if len(result1) == 0: return [result2]
+            elif len(result2) == 0: return [result1]
+            else: return [result1, result2]
+
+        except pymysql.err as err:
+            print(err)
+            Db.close()
+            return -1
 
 
 class SQLCog(commands.Cog):
@@ -564,6 +636,55 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
+    # questionstats command
+    @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats', aliases=["Qstats", "qs"])
+    @commands.cooldown(1, 2)
+    async def QuestionStats(self, ctx, *, message=None):
+        # used to "override" the table that the question is added to for testing purposes
+        guild = ctx.guild.id
+        print("GUILD = ", guild)
+
+        
+        isBot = True
+        if not ctx.author.bot: isBot = False
+
+        RESULTS = questionStats(isBot)
+
+        if RESULTS != -1:
+
+            if len(RESULTS) > 0:
+
+                userQuestionStats = DefaultDict(list)
+                
+                for i in range(len(RESULTS)):
+
+                    if not ctx.author.bot:
+                        if i == 0: userIDCol = "username"
+                        else: userIDCol = "answered_by"
+                    else:
+                        if i == 0: userIDCol = "QUESTION_AUTHOR"
+                        else: userIDCol = "ANSWERED_BY"
+
+                    for r in RESULTS[i]:
+                        user_id = int(r[userIDCol])
+                        num_asked = int(r["COUNT"])
+                        member = await ctx.bot.fetch_user(user_id)
+                        userQuestionStats[member.name].append(num_asked)
+                        if len(userQuestionStats[member.name]) > 1:
+                            userQuestionStats[member.name] = [sum(userQuestionStats[member.name])]
+
+                csv = open('userQuestionStats.csv', 'w')
+                csv.write('NAME,NO. QUESTIONS ASKED,\n')
+
+                for thing in userQuestionStats.items():
+                    csv.write(thing[0]+","+str(thing[1][0])+","+'\n')
+
+                csv.close()
+
+                await ctx.author.send("CSV", file=discord.File('userQuestionStats.csv'))
+
+            else:
+                await ctx.send("No questions asked nor answered.")
 
 def setup(bot):
     bot.add_cog(SQLCog(bot))

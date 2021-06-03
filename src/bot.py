@@ -15,7 +15,7 @@ if (len(sys.argv) - 1) != 0 and sys.argv[1] == "-t":
 else:
     load_dotenv()
 
-TOKEN = os.getenv('TOKEN')
+TOKEN = os.getenv('JAMO')
 bot.load_extension("cogs.SQLCog")
 bot.load_extension("cogs.BasicCog")
 bot.run(TOKEN)

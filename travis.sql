@@ -54,6 +54,6 @@ CREATE TABLE IF NOT EXISTS teststudent_message_log
 `record_count` int,
 `last_message_date`` date,
 `record_count_20` int,
-`server_id`` varchar(50)
+`server_id` varchar(50)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

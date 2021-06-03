@@ -650,8 +650,9 @@ class SQLCog(commands.Cog):
         serverID = ctx.guild.id
 
         if isBot:
+            print(table)
             sql_q = pd.read_sql_query(
-                f'''select discord_id,discord_username,record_count,record_count_20 from {table} where 
+                f'''select discord_id,discord_username from {table} where 
                    server_id = {serverID} ''',
                 conn)
             df = pd.DataFrame(sql_q)

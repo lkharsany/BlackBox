@@ -97,6 +97,10 @@ async def test_statsSent(interface):
             if line not in fileone:
                 outFile.write(line)
 
+    print("OutFile:")
+    for line in outFile:
+        print(line)
+
     with open('src/tests/update.csv', 'r') as update:
         num_lines = len(update.readlines())
         if num_lines == 0:

@@ -119,6 +119,9 @@ async def test_statsSentCount(interface):
     print()
     print(sizeTwo)
 
+    for i, j in zip(range(sizeOne), range(sizeTwo)):
+        print(fileone[i])
+
     if sizeOne == sizeTwo:
         for i, j in zip(range(sizeOne), range(sizeTwo)):
             if fileone[i] != filetwo[j]:

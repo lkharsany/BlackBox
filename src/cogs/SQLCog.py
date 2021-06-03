@@ -614,6 +614,8 @@ class SQLCog(commands.Cog):
     @commands.Cog.listener("on_message")
     @commands.cooldown(1, 2)
     async def on_messageSQL(self, message):
+        if message.author == self.bot.user:
+            return
         userID = message.author.id
         username = str(self.bot.get_user(userID))
         curr_date = datetime.now().strftime('%Y-%m-%d')
@@ -657,7 +659,7 @@ class SQLCog(commands.Cog):
             #print(table)
             sql_q = pd.read_sql_query(
                 f'''select discord_id,discord_username from {table} where 
-                   server_id = {serverID} and discord_id = {discordID}''',
+                   server_id = {serverID} ''',
                 conn)
             df = pd.DataFrame(sql_q)
             df.to_csv(r'src/cogs/testGstats.csv', index=False, header=True)

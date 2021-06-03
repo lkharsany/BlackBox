@@ -98,7 +98,7 @@ async def test_statsSent(interface):
                 outFile.write(line)
 
     with open('src/tests/update.csv', 'r') as update:
-        num_lines = sum(1 for line in update)
+        num_lines = len(update.readlines())
         if num_lines == 0:
             await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
         else:

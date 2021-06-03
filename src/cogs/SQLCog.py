@@ -654,7 +654,6 @@ class SQLCog(commands.Cog):
 
         serverID = ctx.guild.id
         discordID = 829768047350251530
-        print(table)
         if isBot:
             #print(table)
             sql_q = pd.read_sql_query(
@@ -662,14 +661,14 @@ class SQLCog(commands.Cog):
                    server_id = {serverID} ''',
                 conn)
             df = pd.DataFrame(sql_q)
-            df.to_csv(r'src/cogs/testGstats.csv', index=False, header=True)
+            df.to_csv(r'./testGstats.csv', index=False, header=True)
         else:
             sql_q = pd.read_sql_query(
                 f'''select discord_id,discord_username,record_count,last_message_date,record_count_20 from {table} where 
                    server_id = {serverID} ''',
                 conn)
             df = pd.DataFrame(sql_q)
-            df.to_csv(r'src/cogs/Gstats.csv', index=False, header=True)
+            df.to_csv(r'./Gstats.csv', index=False, header=True)
             await ctx.message.author.send(file=discord.File('./Gstats.csv'))
 
         await ctx.message.channel.send("General Stats file sent.")

@@ -88,20 +88,42 @@ async def test_statsSent(interface):
     sizeOne = len(fileone)
     sizeTwo = len(filetwo)
 
-    print("size 1: ", sizeOne, "size 2:", sizeTwo)
-    print()
-
     if sizeOne == sizeTwo:
         for i, j in zip(range(sizeOne), range(sizeTwo)):
             if fileone[i] != filetwo[j]:
-                print(len(fileone[i]))
-                print(len(filetwo[i]))
                 isSame = False
     else:
         isSame = False
 
     if isSame:
-        print("entereddddddddd")
+        await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
+    else:
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+
+@test_collector()
+async def test_statsSentCount(interface):
+    await interface.send_message("Message added test")
+    await interface.get_delayed_reply(1, interface.assert_message_equals, "Message Added")
+    await interface.send_message("./stats")
+
+    with open('src/cogs/testGstats.csv', 'r') as t1, open('src/tests/testComparison.csv', 'r') as t2:
+        print()
+        fileone = t1.readlines()
+        filetwo = t2.readlines()
+
+    isSame = True
+    sizeOne = len(fileone)
+    sizeTwo = len(filetwo)
+
+    if sizeOne == sizeTwo:
+        for i, j in zip(range(sizeOne), range(sizeTwo)):
+            if fileone[i] != filetwo[j]:
+                isSame = False
+    else:
+        isSame = False
+
+    if isSame:
         await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')

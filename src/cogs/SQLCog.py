@@ -275,7 +275,6 @@ def AddMessageCount(table, val, isBot):
         doesUserExist = cur.fetchone()
         doesUserExist = doesUserExist.get('count(*)')
         if doesUserExist > 0:
-            print("testtesttest")
             if val[3] == 1:
                 Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s, record_count_20 = 
                 record_count_20 +1 WHERE  %s = discord_id AND server_id = %s """
@@ -634,6 +633,7 @@ class SQLCog(commands.Cog):
             table = "teststudent_message_log"
 
         if (isBot == True) and (message.content == "Message added test"):
+            val = (829768047350251530, username, curr_date, biggerthan20, serverID)
             code = AddMessageCount(table, val, isBot)
             if code == 1:
                 await message.channel.send('Message Added')

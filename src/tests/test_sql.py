@@ -102,6 +102,7 @@ async def test_statsSent(interface):
         if num_lines == 0:
             await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
         else:
+            print("Num Lines: ", num_lines)
             print(update.readlines())
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 

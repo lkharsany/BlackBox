@@ -84,6 +84,14 @@ async def test_statsSent(interface):
         fileone = t1.readlines()
         filetwo = t2.readlines()
 
+    for line in fileone:
+        print(line)
+
+    print()
+
+    for line in filetwo:
+        print(line)
+
     with open('src/tests/update.csv', 'w') as outFile:
         for line in filetwo:
             if line not in fileone:

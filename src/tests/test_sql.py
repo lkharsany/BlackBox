@@ -94,9 +94,8 @@ async def test_statsSent(interface):
     if sizeOne == sizeTwo:
         for i, j in zip(range(sizeOne), range(sizeTwo)):
             if fileone[i] != filetwo[j]:
-                print(fileone[i])
-                print()
-                print(filetwo[i])
+                print(len(fileone[i]))
+                print(len(filetwo[i]))
                 isSame = False
     else:
         isSame = False

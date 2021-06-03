@@ -84,30 +84,22 @@ async def test_statsSent(interface):
         fileone = t1.readlines()
         filetwo = t2.readlines()
 
-    for line in fileone:
-        print(line)
+    isSame = True
+    sizeOne = len(fileone)
+    sizeTwo = len(filetwo)
 
-    print()
+    if sizeOne == sizeTwo:
+        for i, j in zip(range(sizeOne), range(sizeTwo)):
+            if fileone[i] != filetwo[j]:
+                isSame = False
+    else:
+        isSame = False
 
-    for line in filetwo:
-        print(line)
-
-    with open('src/tests/update.csv', 'w') as outFile:
-        for line in filetwo:
-            if line not in fileone:
-                outFile.write(line)
-        print("OutFile:")
-        for line in outFile:
-            print(line)
-
-    with open('src/tests/update.csv', 'r') as update:
-        num_lines = len(update.readlines())
-        if num_lines == 0:
-            await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
-        else:
-            print("Num Lines: ", num_lines)
-            print(update.readlines())
-            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+    if isSame:
+        await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
+    else:
+        #print(update.readlines())
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 @test_collector()
 async def test_ask(interface):

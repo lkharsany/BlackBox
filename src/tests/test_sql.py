@@ -77,7 +77,7 @@ created_channel = None
 async def test_statsSent(interface):
     await interface.send_message("Message added test")
     await interface.get_delayed_reply(1, interface.assert_message_equals, "Message Added")
-    await interface.send_message("./statss")
+    await interface.send_message("./stats")
 
     with open('src/cogs/testGstats.csv', 'r') as t1, open('src/tests/testComparison.csv', 'r') as t2:
         fileone = t1.readlines()

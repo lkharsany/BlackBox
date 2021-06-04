@@ -76,7 +76,6 @@ created_channel = None
 @test_collector()
 async def test_statsSent(interface):
     await interface.send_message("Message added test")
-    #await interface.send_message("Message added test second message")
     await interface.get_delayed_reply(1, interface.assert_message_equals, "Message Added")
     await interface.send_message("./stats")
 

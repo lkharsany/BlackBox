@@ -270,7 +270,6 @@ def AddMessageCount(table, val, isBot):
         Val = [val[0], val[4]]
         Q = f"""SELECT count(*) FROM {table} WHERE discord_id = %s AND server_id = %s """
         cur.execute(Q, Val)
-
         newVal = [val[2], str(val[0]), str(val[4])]
         doesUserExist = cur.fetchone()
         doesUserExist = doesUserExist.get('count(*)')
@@ -633,7 +632,6 @@ class SQLCog(commands.Cog):
             table = "teststudent_message_log"
 
         if (isBot == True) and (message.content == "Message added test"):
-            val = (829768047350251530, username, curr_date, biggerthan20, serverID)
             code = AddMessageCount(table, val, isBot)
             if code == 1:
                 await message.channel.send('Message Added')

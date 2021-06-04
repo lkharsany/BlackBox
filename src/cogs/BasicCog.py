@@ -1,8 +1,9 @@
 from discord.ext import commands
 import asyncio
-
+import time
 
 class BasicCog(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
         self.description = "Some Basic Commands"
@@ -19,7 +20,7 @@ class BasicCog(commands.Cog):
     @commands.command(name='bye', hidden=True)
     async def shutdown(self, ctx):
         await ctx.send('Shutting Down...')
-        await asyncio.sleep(5)
+        await asyncio.sleep(3)
         await self.bot.logout()
 
     # WILL DM THE PERSON WHO INVOKES THE COMMAND
@@ -27,8 +28,9 @@ class BasicCog(commands.Cog):
                       description="Send a Direct Message to person who called it")
     @commands.cooldown(1, 2)
     async def dm(self, ctx):
+        if not ctx.author.bot:
+            await ctx.author.send('BEEP BOOP!')
         await ctx.send('DM sent')
-        await ctx.author.send('beep boop!')
 
     # MONITORS ALL MESSAGES AND IF CERTAIN PHRASES ARE SAID IT WILL RESPOND.
     # CAN ONLY HAVE ONE LISTENERS (PER COG?)
@@ -36,7 +38,7 @@ class BasicCog(commands.Cog):
     @commands.cooldown(1, 2)
     async def on_message(self, message):
         if message.content.lower() == "hi":
-            await message.channel.send('Hello there')
+            await message.channel.send('Hello there :)')
             await self.bot.process_commands(message)
 
         if message.content.lower() == "ping":
@@ -44,7 +46,8 @@ class BasicCog(commands.Cog):
             await self.bot.process_commands(message)
 
         if message.attachments:
-            Blacklist = ['c', 'html', 'jpeg', 'css', 'java', 'jpg', 'svg', '.txt', 'docx', 'js', 'py', 'ipynb', 'png', 'sql', 'h', 'pdf', 'txt', 'cpp']
+            Blacklist = ['c', 'html', 'jpeg', 'css', 'java', 'jpg', 'svg', '.txt', 'docx', 'js', 'py', 'ipynb', 'png',
+                         'sql', 'h', 'pdf', 'txt', 'cpp']
             filename = message.attachments[0].filename
             ext = filename.split(".")[-1]
             if ext in Blacklist:
@@ -52,8 +55,10 @@ class BasicCog(commands.Cog):
                 await message.delete()
                 await message.channel.send("Attachment Deleted. \n Please refrain from sending images or code on this "
                                            "channel.")
-                await message.author.send('Please do not send code to the channel, if you need help DM one of the '
-                                          'tutors or lecturers.')
+
+                if not message.author.bot:
+                    await message.author.send('Please do not send code to the channel, if you need help DM one of the '
+                                              'tutors or lecturers.')
                 await self.bot.process_commands(message)
 
     # CLEARS THE CHANNEL COMPLETELY ONLY A PERSON WITH ROLE CAN USE IT

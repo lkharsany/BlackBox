@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import DefaultDict
 
 import pymysql.cursors
 from distest import TestCollector
@@ -9,6 +10,7 @@ import asyncio
 
 
 class TravisDBConnect:
+
     def __init__(self):
         self._username = "root"
         self._password = ""
@@ -64,7 +66,6 @@ def getLecturerQuestionsID(username):
     except Exception as e:
         print(e)
         return -99
-
 
 TESTER = os.getenv('Tester')
 test_collector = TestCollector()

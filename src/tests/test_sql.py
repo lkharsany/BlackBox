@@ -9,20 +9,17 @@ import asyncio
 
 
 class TravisDBConnect:
-
     def __init__(self):
-        self._username = "mleendox2"
-        self._password = "lastpass"
-        self._database = "botdb"
-        self._auth_plugin='mysql_native_password'
+        self._username = "root"
+        self._password = ""
+        self._database = "testDB"
 
     def open(self):
         connection = pymysql.connect(
-            host='localhost',
+            host='127.0.0.1',
             user=self._username,
             password=self._password,
             database=self._database,
-            auth_plugin=self._auth_plugin,
             port=3306,
             cursorclass=pymysql.cursors.DictCursor)
 
@@ -167,10 +164,6 @@ async def test_faq(interface):
 async def test_delfaq(interface):
     await interface.send_message("./DELFAQ")
     await interface.get_delayed_reply(2, interface.assert_message_equals, "FAQ Channel Deleted")
-
-@test_collector()
-async def test_stats(interface):
-    await interface.send_message("./QuestionStats")
 
 
 # Actually run the bot

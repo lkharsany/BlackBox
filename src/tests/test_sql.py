@@ -99,34 +99,6 @@ async def test_statsSent(interface):
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
-
-@test_collector()
-async def test_statsSentUpdate(interface):
-    await interface.send_message("Message added test")
-    await interface.get_delayed_reply(1, interface.assert_message_equals, "Message Added")
-    await interface.send_message("./stats")
-
-    with open('src/cogs/testGstats.csv', 'r') as t1, open('src/tests/testComparison.csv', 'r') as t2:
-        fileone = t1.readlines()
-        filetwo = t2.readlines()
-
-    isSame = True
-    sizeOne = len(fileone)
-    sizeTwo = len(filetwo)
-
-    if sizeOne == sizeTwo:
-        for i, j in zip(range(sizeOne), range(sizeTwo)):
-            if fileone[i] != filetwo[j]:
-                isSame = False
-    else:
-        isSame = False
-
-    if isSame:
-        await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
-    else:
-        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-
-
 @test_collector()
 async def test_ask(interface):
     Username = 829768047350251530

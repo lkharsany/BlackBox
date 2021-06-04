@@ -270,6 +270,7 @@ def AddMessageCount(table, val, isBot):
         Val = [val[0], val[4]]
         Q = f"""SELECT count(*) FROM {table} WHERE discord_id = %s AND server_id = %s """
         cur.execute(Q, Val)
+
         newVal = [val[2], str(val[0]), str(val[4])]
         doesUserExist = cur.fetchone()
         doesUserExist = doesUserExist.get('count(*)')

@@ -124,6 +124,33 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
+@test_collector
+async def test_questionStats(interface):
+    await interface.send_message("./QuestionStats")
+
+    with open('src/csv/QStatsComparison.csv', 'r') as t1, open('src/csv/TestQuestion_Stats.csv', 'r') as t2:
+        fileOne = t1.readlines()
+        fileTwo = t2.readlines()
+
+        isSame = True
+        sizeOne = len(fileOne)
+        sizeTwo = len(fileTwo)
+
+        if sizeOne == sizeTwo:
+            for i, j in zip(range(sizeOne), range(sizeTwo)):
+                if fileOne[i] != fileTwo[j]:
+                    isSame = False
+                    print(fileOne[i])
+                    print(fileTwo[j])
+        else:
+            isSame = False
+
+        if isSame:
+            await interface.get_delayed_reply(2, interface.assert_message_equals, "Question Stats file sent.")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+
 @test_collector()
 async def test_refer(interface):
     Username = 829768047350251530

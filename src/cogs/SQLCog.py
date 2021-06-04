@@ -262,92 +262,31 @@ def getReferredQuestionRow(table, ID, isBot):
         return -1
 
 
-# for question stats
-def questionStats(isBot, table1, table2, guild_id):
-
-    Db = DBConnect()
-
+def QuestionStats(qTable, aTable, guild_id, isBot):
     if isBot:
-
-        try:
-            conn = Db.open()
-            cur = conn.cursor()
-
-            test_table1 = "TestDiscordQuestions"
-            test_table2 = "TestDiscordAnswers"
-
-            tempDiscordQuestions = f"""CREATE TEMPORARY TABLE IF NOT EXISTS {test_table1}
-                                        AS (SELECT * FROM {table1})
-                                    """
-            tempDiscordAnswers = f"""CREATE TEMPORARY TABLE IF NOT EXISTS {test_table2}
-                                        AS (SELECT * FROM {table2})
-                                    """
-            
-            cur.execute(tempDiscordQuestions)
-            cur.execute(tempDiscordAnswers)
-            
-
-            Q1 = f"""SELECT username, COUNT(*) as COUNT 
-                    FROM {test_table1}
-                    WHERE channel = {guild_id}
-                    GROUP BY username"""
-            cur.execute(Q1)
-            result1 = cur.fetchall()
-
-            Q2 = f"""SELECT answered_by, COUNT(*) as COUNT 
-                    FROM {test_table2}
-                    WHERE channel = {guild_id}
-                    GROUP BY answered_by"""
-            cur.execute(Q2)
-            result2 = cur.fetchall()
-
-            Db.close()
-
-            if len(result1) == 0:
-                return [result2]
-            elif len(result2) == 0:
-                return [result1]
-            else:
-                return [result1, result2]
-
-        except pymysql.err as err:
-            print(err)
-            Db.close()
-            return -1
-
+        Db = TravisDBConnect()
     else:
+        Db = DBConnect()
 
-        try:
-            conn = Db.open()
-            cur = conn.cursor()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
 
-            Q1 = f"""SELECT username, COUNT(*) as COUNT
-                    FROM {table1}
-                    WHERE channel = {guild_id}
-                    GROUP BY username"""
-            cur.execute(Q1)
-            result1 = cur.fetchall()
+        Q1 = f"""SELECT username, COUNT(*) as COUNT FROM {qTable} WHERE channel = {guild_id} GROUP BY username"""
+        cur.execute(Q1)
+        result1 = cur.fetchall()
 
-            Q2 = f"""SELECT answered_by, COUNT(*) as COUNT 
-                    FROM {table2}
-                    WHERE channel = {guild_id}
-                    GROUP BY answered_by"""
-            cur.execute(Q2)
-            result2 = cur.fetchall()
+        Q2 = f"""SELECT asked_by, COUNT(*) as COUNT FROM {aTable} WHERE channel = {guild_id} GROUP BY asked_by"""
+        cur.execute(Q2)
+        result2 = cur.fetchall()
+        Db.close()
 
-            Db.close()
+        return result1, result2
 
-            if len(result1) == 0:
-                return [result2]
-            elif len(result2) == 0:
-                return [result1]
-            else:
-                return [result1, result2]
-
-        except pymysql.err as err:
-            print(err)
-            Db.close()
-            return -1
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
 
 
 class SQLCog(commands.Cog):
@@ -659,57 +598,59 @@ class SQLCog(commands.Cog):
             await ctx.send("Not a Valid Question ID")
 
     # questionstats command
-    @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats', aliases=["Qstats", "qs"])
+    @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats',
+                      aliases=["Qstats", "qs"])
     @commands.cooldown(1, 2)
     async def QuestionStats(self, ctx):
         # used to "override" the table that the question is added to for testing purposes
         guild_id = str(ctx.guild.id)
-        
+
         isBot = True
 
         if not ctx.author.bot:
             isBot = False
-        
-        table1 = "DiscordQuestions"
-        table2 = "DiscordAnswers"
+            qTable = "DiscordQuestions"
+            aTable = "DiscordAnswers"
+        else:
+            qTable = "TestDiscordQuestions"
+            aTable = "TestDiscordAnswers"
 
-        RESULTS = questionStats(isBot, table1, table2, guild_id)
+        result = QuestionStats(qTable, aTable, guild_id, isBot)
 
-        if RESULTS != -1:
+        if result != -1:
+            result1 = result[0]
+            result2 = result[1]
+            r1 = pd.DataFrame.from_dict(result1)
+            r1.columns = ["Username", "Unanswered_Questions"]
 
-            if len(RESULTS) > 0:
+            r2 = pd.DataFrame.from_dict(result2)
+            r2.columns = ["Username", "Answered_Questions"]
 
-                userQuestionStats = DefaultDict(list)
+            joint = r1.merge(r2, on="Username", how="outer").fillna(0)
+            joint[['Unanswered_Questions', "Answered_Questions"]] = joint[
+                ['Unanswered_Questions', "Answered_Questions"]].astype(int)
 
-                for i in range(len(RESULTS)):
+            usernames = joint["Username"]
+            for i in range(len(usernames)):
+                member = await ctx.bot.fetch_user(usernames[i])
+                name = member.display_name
+                usernames[i] = name
 
-                    if i == 0: userIDCol = "username"
-                    else: userIDCol = "answered_by"
 
-                    for r in RESULTS[i]:
-                        user_id = int(r[userIDCol])
-                        num_asked = int(r["COUNT"])
-                        member = await ctx.bot.fetch_user(user_id)
-                        userQuestionStats[member.name].append(num_asked)
-                        if len(userQuestionStats[member.name]) > 1:
-                            userQuestionStats[member.name] = [sum(userQuestionStats[member.name])]
 
-                csv = open('userQuestionStats.csv', 'w')
-                csv.write('NAME,NO. QUESTIONS ASKED,\n')
-
-                for thing in userQuestionStats.items():
-                    csv.write(thing[0] + "," + str(thing[1][0]) + "," + '\n')
-
-                csv.close()
-
-                if isBot == True:
-                    # stats_df = pd.read_csv('userQuestionStats.csv')
-                    await ctx.send("CSV", file=discord.File('userQuestionStats.csv'))
-                else:
-                    await ctx.author.send("CSV", file=discord.File('userQuestionStats.csv'))
-
+            if not isBot:
+                file_path = r"./csv/Question_Stats.csv"
+                joint.to_csv(file_path, index=False)
+                await ctx.author.send(file=discord.File(file_path))
             else:
-                await ctx.send("No questions asked nor answered.")
+                file_path = r"./csv/TestQuestion_Stats.csv"
+                joint.to_csv(file_path, index=False)
+
+            await ctx.send("Question Stats file sent.")
+
+
+        else:
+            ctx.send("An error has occurred")
 
 
 def setup(bot):

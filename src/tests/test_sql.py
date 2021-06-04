@@ -124,7 +124,7 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
-@test_collector
+@test_collector()
 async def test_questionStats(interface):
     await interface.send_message("./QuestionStats")
 

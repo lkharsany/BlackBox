@@ -35,6 +35,10 @@ async def test_cheers(interface):
     await interface.send_message("hi")
     await interface.get_delayed_reply(1, interface.assert_message_equals, "Hello there")
 
+@test_collector()
+async def test_reaction(interface):
+    await interface.assert_reaction_equals("ReactionsTestMessage", "👍")
+
 
 @test_collector()
 async def test_dm(interface):

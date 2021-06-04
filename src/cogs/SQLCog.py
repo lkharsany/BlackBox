@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+import pandas as pd
 import pymysql.cursors
 import discord
 from discord.ext import commands
@@ -276,16 +277,16 @@ def addReaction(table, val, isBot):
         if(doesMsgExist > 0):
 
             if (val[3] == 1):
-                Q = f"""UPDATE {table} SET good_reactions = good_reactions + 1, total_reactions = total_reactions + 1 WHERE message_id = %s """
+                Q = f"""UPDATE {table} SET good_reaction = good_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
                 cur.execute(Q, val[0])
             if (val[4] == 1):
-                Q = f"""UPDATE {table} SET bad_reactions = bad_reactions + 1, total_reactions = total_reactions + 1 WHERE message_id = %s """
+                Q = f"""UPDATE {table} SET bad_reaction = bad_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
                 cur.execute(Q, val[0])
             if (val[5] == 1):
-                Q = f"""UPDATE {table} SET other_reactions = other_reactions + 1, total_reactions = total_reactions + 1 WHERE message_id = %s """
+                Q = f"""UPDATE {table} SET other_reaction = other_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
                 cur.execute(Q, val[0])
         else:
-            Q = f"""INSERT INTO {table} (message_id, message, author, good_reaction, bad_reaction, other_reaction, total_raction) Values (%s,%s,%s,%s,%s,%s,%s)"""
+            Q = f"""INSERT INTO {table} (message_id, message, author, good_reaction, bad_reaction, other_reaction, total_reaction) Values (%s,%s,%s,%s,%s,%s,%s)"""
             cur.execute(Q, val)
 
         conn.commit()
@@ -308,18 +309,37 @@ def removeReaction(table, val, isBot):
 
 
         if (val[1] == 0):
-            Q = f"""UPDATE {table} SET good_reactions = good_reactions - 1, total_reactions = total_reactions - 1 WHERE message_id = %s """
+            Q = f"""UPDATE {table} SET good_reaction = good_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
             cur.execute(Q, val[0])
         if (val[1] == 1):
-            Q = f"""UPDATE {table} SET bad_reactions = bad_reactions - 1, total_reactions = total_reactions - 1 WHERE message_id = %s """
+            Q = f"""UPDATE {table} SET bad_reaction = bad_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
             cur.execute(Q, val[0])
         if (val[1] == 2):
-            Q = f"""UPDATE {table} SET other_reactions = other_reactions - 1, total_reactions = total_reactions - 1 WHERE message_id = %s """
+            Q = f"""UPDATE {table} SET other_reaction = other_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
             cur.execute(Q, val[0])
 
         conn.commit()
         Db.close()
         return 1
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+def getReactionCSV(table, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+
+
+        sql_q = pd.read_sql_query(f"""select * from {table} """, conn)
+        df = pd.DataFrame(sql_q)
+        return df
 
     except pymysql.err as err:
         print(err)
@@ -636,8 +656,26 @@ class SQLCog(commands.Cog):
 
     @commands.command(name='Reactions', brief="send reactions", description="Sends a csv file with reactions data")
     @commands.cooldown(1, 2)
-    async def cool_bot(self, ctx):
-        await ctx.send("CSV", file=discord.File('/home/neeloufah/PycharmProjects/BlackBox/src/cogs/Reactions.csv'))
+    async def reactionCSV(self, ctx):
+
+        isBot = True
+
+        if not ctx.author.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        df = getReactionCSV(table, isBot)
+
+        if ( isBot):
+            df.to_csv(r'/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/TestReactions.csv')
+            await ctx.send("CSV", file=discord.File('/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/TestReactions.csv'))
+        else:
+            df.to_csv(r'/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/Reactions.csv')
+            await ctx.send("CSV", file=discord.File('/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/Reactions.csv'))
+
+
 
     # Detects when a reaction ia added to a message
     @commands.Cog.listener()
@@ -690,8 +728,11 @@ class SQLCog(commands.Cog):
             table = "TestDiscordReactions"
 
         code = addReaction(table, info, isBot)
+
+        '''
         if(code == 1):
             await channel.send('Reaction has been added to message')
+        '''
 
 
 
@@ -729,8 +770,10 @@ class SQLCog(commands.Cog):
             table = "TestDiscordReactions"
 
         code = removeReaction(table, val, isBot)
+        '''
         if (code == 1):
             await channel.send('Reaction has been removed from message')
+        '''
 
 
 def setup(bot):

@@ -45,6 +45,10 @@ class BasicCog(commands.Cog):
             await message.channel.send('Pong!')
             await self.bot.process_commands(message)
 
+        if message.content == "ReactionsTestMessage":
+            await self.bot.reaction(message, "👍")
+            await self.bot.process_commands(message)
+
         if message.attachments:
             Blacklist = ['c', 'html', 'jpeg', 'css', 'java', 'jpg', 'svg', '.txt', 'docx', 'js', 'py', 'ipynb', 'png',
                          'sql', 'h', 'pdf', 'txt', 'cpp']

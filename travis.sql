@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS TestDiscordReactions
 
     `bad_reaction` int(5)   not null,
     `other_reaction` int(5)  not null,
-    `total_reaction` int(5) not null,
+    `total_reaction` int(5) not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

@@ -654,7 +654,6 @@ class SQLCog(commands.Cog):
 
         serverID = ctx.guild.id
         discordID = 829768047350251530
-        print(table)
         if isBot:
             #print(table)
             sql_q = pd.read_sql_query(

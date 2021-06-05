@@ -76,37 +76,35 @@ async def test_reaction(interface):
 
 @test_collector()
 async def test_reactionStats(interface):
-    if await interface.assert_reaction_equals("ReactionsTestMessage", u"\U0001F44D"):
+    await interface.send_message("ReactionsTestMessage")
+    await asyncio.sleep(2)
+    await interface.send_message("./ReactionStats")
 
-        await interface.send_message("./ReactionStats")
+    with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv', 'r') as t2:
+        fileOne = t1.readlines()
+        fileTwo = t2.readlines()
 
-        with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv', 'r') as t2:
-            fileOne = t1.readlines()
-            fileTwo = t2.readlines()
+        isSame = True
+        sizeOne = len(fileOne)
+        sizeTwo = len(fileTwo)
 
-            isSame = True
-            sizeOne = len(fileOne)
-            sizeTwo = len(fileTwo)
+        if sizeOne == sizeTwo:
+            for i, j in zip(range(sizeOne), range(sizeTwo)):
+                if fileOne[i] != fileTwo[j]:
+                    isSame = False
+                    print(fileOne[i])
+                    print(fileTwo[j])
+        else:
+            isSame = False
+            print("Uneven")
+            print(fileOne)
+            print(fileTwo)
 
-            if sizeOne == sizeTwo:
-                for i, j in zip(range(sizeOne), range(sizeTwo)):
-                    if fileOne[i] != fileTwo[j]:
-                        isSame = False
-                        print(fileOne[i])
-                        print(fileTwo[j])
-            else:
-                isSame = False
-                print("Uneven")
-                print(fileOne)
-                print(fileTwo)
-
-            if isSame:
-                print("HERE")
-                await interface.get_delayed_reply(5, interface.assert_message_equals, "Reactions Stats file sent.")
-            else:
-                await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-    else:
-        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+        if isSame:
+            print("HERE")
+            await interface.get_delayed_reply(5, interface.assert_message_equals, "Reactions Stats file sent.")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
 @test_collector()

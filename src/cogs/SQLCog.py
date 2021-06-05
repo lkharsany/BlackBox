@@ -1,14 +1,12 @@
 import os
 from datetime import datetime
 
-
 import pymysql.cursors
 import discord
 from discord.ext import commands
 from discord.utils import get, find
 from sshtunnel import SSHTunnelForwarder
 import pandas as pd
-
 
 AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
 answeredBrief = "Usage: Answer <question id>\n Will then need to send your answer prefixed with  the \"answer:\" when " \
@@ -276,7 +274,7 @@ def addReaction(table, val, isBot):
         doesMsgExist = cur.fetchone()
         doesMsgExist = doesMsgExist.get('count(*)')
 
-        if(doesMsgExist > 0):
+        if (doesMsgExist > 0):
 
             if (val[3] == 1):
                 Q = f"""UPDATE {table} SET good_reaction = good_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
@@ -288,7 +286,8 @@ def addReaction(table, val, isBot):
                 Q = f"""UPDATE {table} SET other_reaction = other_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
                 cur.execute(Q, val[0])
         else:
-            Q = f"""INSERT INTO {table} (message_id, message, author, good_reaction, bad_reaction, other_reaction, total_reaction) Values (%s,%s,%s,%s,%s,%s,%s)"""
+            Q = f"""INSERT INTO {table} (message_id, message, author, good_reaction, bad_reaction, other_reaction, total_reaction,guild) Values (%s,%s,%s,%s,%s,%s,%s,%s)"""
+            print(val[7])
             cur.execute(Q, val)
 
         conn.commit()
@@ -308,7 +307,6 @@ def removeReaction(table, val, isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-
 
         if (val[1] == 0):
             Q = f"""UPDATE {table} SET good_reaction = good_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
@@ -330,24 +328,25 @@ def removeReaction(table, val, isBot):
         return -1
 
 
-def getReactionCSV(table, isBot):
+def getReactionCSV(table, isBot, guild_ID):
     if isBot:
         Db = TravisDBConnect()
     else:
         Db = DBConnect()
     try:
         conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table} where guild = %s"""
+        cur.execute(Q, (guild_ID,))
+        result = cur.fetchall()
+        Db.close()
 
-
-        sql_q = pd.read_sql_query(f"""select * from {table} """, conn)
-        df = pd.DataFrame(sql_q)
-        return df
+        return result
 
     except pymysql.err as err:
         print(err)
         Db.close()
         return -1
-
 
 
 class SQLCog(commands.Cog):
@@ -656,9 +655,10 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
-    @commands.command(name='Reactions', brief="send reactions", description="Sends a csv file with reactions data")
+    @commands.command(name='ReactionStats', brief="send reactions", description="Sends a csv file with reactions data")
     @commands.cooldown(1, 2)
     async def reactionCSV(self, ctx):
+        guild = ctx.guild.id
 
         isBot = True
 
@@ -668,16 +668,34 @@ class SQLCog(commands.Cog):
         else:
             table = "TestDiscordReactions"
 
-        df = getReactionCSV(table, isBot)
+        result = getReactionCSV(table, isBot, guild)
 
-        if ( isBot):
-            df.to_csv(r'/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/TestReactions.csv')
-            await ctx.send("CSV", file=discord.File('/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/TestReactions.csv'))
+        if result != -1:
+
+            df = pd.DataFrame.from_dict(result)
+
+            df.drop(["id", 'message_id', 'guild'], axis=1, inplace=True)
+
+            usernames = df["author"]
+            for i in range(len(usernames)):
+                member = await ctx.bot.fetch_user(usernames[i])
+                name = member.display_name
+                to_replace = usernames[i]
+                df.replace(to_replace, name, inplace=True)
+
+            if not isBot:
+                file_path = r"../src/csv/Reactions_Stats.csv"
+                df.to_csv(file_path, index=False)
+                await ctx.author.send(file=discord.File(file_path))
+
+            else:
+                file_path = r"src/csv/TestReaction_Stats.csv"
+                df.to_csv(file_path, index=False)
+
+            await ctx.send("Reactions Stats file sent.")
+
         else:
-            df.to_csv(r'/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/Reactions.csv')
-            await ctx.send("CSV", file=discord.File('/home/neeloufah/PycharmProjects/BlackBox/src/CSVFiles/Reactions.csv'))
-
-
+            await ctx.send("An error has occurred")
 
     # Detects when a reaction ia added to a message
     @commands.Cog.listener()
@@ -691,15 +709,10 @@ class SQLCog(commands.Cog):
         message = await channel.fetch_message(payload.message_id)
         user = await self.bot.fetch_user(payload.user_id)
         emoji = str(payload.emoji)
-        print(message.content)
-        print(emoji)
-        #guild = payload.guild.id
-        #print(guild)
 
-        info = []
-        info.append(message.id)
-        info.append(message.content)
-        info.append(user.id)
+        guild = payload.guild_id
+
+        info = [message.id, message.content, user.id]
         if emoji in Good:
             info.append(1)
         else:
@@ -716,9 +729,6 @@ class SQLCog(commands.Cog):
 
         info.append(1)
 
-        print('info:', info)
-
-
         member = payload.member
 
         isBot = True
@@ -729,15 +739,13 @@ class SQLCog(commands.Cog):
         else:
             table = "TestDiscordReactions"
 
+        info.append(guild)
         code = addReaction(table, info, isBot)
 
         '''
         if(code == 1):
             await channel.send('Reaction has been added to message')
         '''
-
-
-
 
     @commands.Cog.listener()
     @commands.cooldown(1, 2)
@@ -750,18 +758,13 @@ class SQLCog(commands.Cog):
         message = await channel.fetch_message(payload.message_id)
         user = await self.bot.fetch_user(payload.user_id)
         emoji = str(payload.emoji)
-        print(message.content)
-        print(emoji)
 
-
-
-        if(emoji in Good):
+        if emoji in Good:
             val = (message.id, 0)
-        if (emoji in Bad):
+        elif emoji in Bad:
             val = (message.id, 1)
-        if (emoji not in Good and emoji not in Bad):
+        else:
             val = (message.id, 2)
-
 
         isBot = True
 

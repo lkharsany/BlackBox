@@ -67,12 +67,40 @@ def getLecturerQuestionsID(username):
         return -99
 
 
-
-
-
 TESTER = os.getenv('Tester')
 test_collector = TestCollector()
 created_channel = None
+@test_collector()
+async def test_reaction(interface):
+    await interface.assert_reaction_equals("ReactionsTestMessage", u"\U0001F44D")
+
+
+@test_collector()
+async def test_reactionStats(interface):
+    await interface.send_message("./ReactionStats")
+
+    with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv', 'r') as t2:
+        fileOne = t1.readlines()
+        fileTwo = t2.readlines()
+
+        isSame = True
+        sizeOne = len(fileOne)
+        sizeTwo = len(fileTwo)
+
+        if sizeOne == sizeTwo:
+            for i, j in zip(range(sizeOne), range(sizeTwo)):
+                if fileOne[i] != fileTwo[j]:
+                    isSame = False
+                    print(fileOne[i])
+                    print(fileTwo[j])
+        else:
+            isSame = False
+
+        if isSame:
+            print("HERE")
+            await interface.get_delayed_reply(5, interface.assert_message_equals, "Reactions Stats file sent.")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
 @test_collector()
@@ -85,10 +113,6 @@ async def test_ask(interface):
         await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-
-@test_collector()
-async def test_reaction(interface):
-    await interface.assert_reaction_equals("ReactionsTestMessage", u"\U0001F44D")
 
 
 @test_collector()
@@ -153,13 +177,13 @@ async def test_lecturer(interface):
     if new_ID != -99:
         if new_ID != -99:
             message = await interface.send_message(f"./Lecturer {new_ID}")
-            y = await interface.get_delayed_reply(2, interface.assert_message_equals, f"What's the answer? Begin with the phrase \"answer: \"")
+            y = await interface.get_delayed_reply(2, interface.assert_message_equals,
+                                                  f"What's the answer? Begin with the phrase \"answer: \"")
             if y:
                 message = await interface.send_message("answer: yes, yes it is")
                 await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-
 
 
 @test_collector()

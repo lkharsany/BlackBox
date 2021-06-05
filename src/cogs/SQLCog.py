@@ -689,7 +689,7 @@ class SQLCog(commands.Cog):
                 await ctx.author.send(file=discord.File(file_path))
 
             else:
-                file_path = r"src/csv/TestReaction_Stats.csv"
+                file_path = r"src/csv/TestReactions_Stats.csv"
                 df.to_csv(file_path, index=False)
 
             await ctx.send("Reactions Stats file sent.")

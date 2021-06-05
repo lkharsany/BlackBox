@@ -124,6 +124,22 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
+
+@test_collector()
+async def test_refer(interface):
+    Username = 829768047350251530
+    await interface.send_message("./Ask Is this a test question?")
+    new_ID = getQuestionsID(Username)
+    if new_ID != -99:
+        if new_ID != -99:
+            x = await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
+            if x:
+                message = await interface.send_message(f"./Refer {new_ID}")
+                await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Sent to Lecturer")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+
 @test_collector()
 async def test_questionStats(interface):
     await interface.send_message("./QuestionStats")
@@ -151,20 +167,6 @@ async def test_questionStats(interface):
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
-
-@test_collector()
-async def test_refer(interface):
-    Username = 829768047350251530
-    await interface.send_message("./Ask Is this a test question?")
-    new_ID = getQuestionsID(Username)
-    if new_ID != -99:
-        if new_ID != -99:
-            x = await interface.get_delayed_reply(2, interface.assert_message_equals, 'Question Added')
-            if x:
-                message = await interface.send_message(f"./Refer {new_ID}")
-                await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Sent to Lecturer")
-        else:
-            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
 @test_collector()

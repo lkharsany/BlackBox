@@ -689,8 +689,17 @@ class SQLCog(commands.Cog):
                 await ctx.author.send(file=discord.File(file_path))
 
             else:
+                print(df)
                 file_path = r"src/csv/TestReactions_Stats.csv"
                 df.to_csv(file_path, index=False)
+
+                with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv',
+                                                                           'r') as t2:
+                    fileOne = t1.readlines()
+                    fileTwo = t2.readlines()
+
+                    print(fileOne)
+                    print(fileTwo)
 
             await ctx.send("Reactions Stats file sent.")
 

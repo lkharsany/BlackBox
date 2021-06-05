@@ -653,7 +653,7 @@ class SQLCog(commands.Cog):
                 await ctx.author.send(file=discord.File(file_path))
 
             else:
-                file_path = r"/src/csv/TestQuestion_Stats.csv"
+                file_path = r"src/csv/TestQuestion_Stats.csv"
                 joint.to_csv(file_path, index=False)
 
             await ctx.send("Question Stats file sent.")

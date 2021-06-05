@@ -95,6 +95,8 @@ async def test_reactionStats(interface):
                     print(fileTwo[j])
         else:
             isSame = False
+            print("Uneven")
+            print(sizeOne,sizeTwo)
 
         if isSame:
             print("HERE")

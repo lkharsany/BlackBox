@@ -88,10 +88,7 @@ async def test_ask(interface):
 
 @test_collector()
 async def test_reaction(interface):
-
-    await interface.send_message("./Reaction")
-    await asyncio.sleep(1)
-    await interface.assert_reply_has_image("CSV")
+    await interface.assert_reaction_equals("ReactionsTestMessage", u"👍")
 
 
 @test_collector()

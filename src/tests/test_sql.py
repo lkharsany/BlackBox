@@ -73,9 +73,10 @@ created_channel = None
 @test_collector()
 async def test_reaction(interface):
     await interface.assert_reaction_equals("ReactionsTestMessage", u"\U0001F44D")
-
+    await asyncio.sleep(2)
 
 @test_collector()
+
 async def test_reactionStats(interface):
     await interface.send_message("./ReactionStats")
 

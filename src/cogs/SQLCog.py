@@ -262,16 +262,21 @@ def getReferredQuestionRow(table, ID, isBot):
         return -1
 
 
+
 def QuestionStats(qTable, aTable, guild_id, isBot):
-    if isBot:
+      if isBot:
         Db = TravisDBConnect()
     else:
         Db = DBConnect()
-
     try:
         conn = Db.open()
         cur = conn.cursor()
+        Q = f"""Select * FROM {table} where guild = %s"""
+        cur.execute(Q, (guild_ID,))
+        result = cur.fetchall()
+        Db.close()
 
+        return result
         Q1 = f"""SELECT username, COUNT(*) as COUNT FROM {qTable} WHERE channel = {guild_id} GROUP BY username"""
         cur.execute(Q1)
         result1 = cur.fetchall()
@@ -287,6 +292,98 @@ def QuestionStats(qTable, aTable, guild_id, isBot):
         print(err)
         Db.close()
         return -1
+  
+  
+  
+def addReaction(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+
+        Q = f"""SELECT count(*) FROM {table} WHERE message_id = %s"""
+        cur.execute(Q, val[0])
+
+        doesMsgExist = cur.fetchone()
+        doesMsgExist = doesMsgExist.get('count(*)')
+
+        if (doesMsgExist > 0):
+
+            if (val[3] == 1):
+                Q = f"""UPDATE {table} SET good_reaction = good_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
+                cur.execute(Q, val[0])
+            if (val[4] == 1):
+                Q = f"""UPDATE {table} SET bad_reaction = bad_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
+                cur.execute(Q, val[0])
+            if (val[5] == 1):
+                Q = f"""UPDATE {table} SET other_reaction = other_reaction + 1, total_reaction = total_reaction + 1 WHERE message_id = %s """
+                cur.execute(Q, val[0])
+        else:
+            Q = f"""INSERT INTO {table} (message_id, message, author, good_reaction, bad_reaction, other_reaction, total_reaction,guild) Values (%s,%s,%s,%s,%s,%s,%s,%s)"""
+            cur.execute(Q, val)
+
+        conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+def removeReaction(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+
+
+        if (val[1] == 0):
+            Q = f"""UPDATE {table} SET good_reaction = good_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
+            cur.execute(Q, val[0])
+        if (val[1] == 1):
+            Q = f"""UPDATE {table} SET bad_reaction = bad_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
+            cur.execute(Q, val[0])
+        if (val[1] == 2):
+            Q = f"""UPDATE {table} SET other_reaction = other_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
+            cur.execute(Q, val[0])
+
+        conn.commit()
+        Db.close()
+        return 1
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+def getReactionCSV(table, isBot, guild_ID):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table} where guild = %s"""
+        cur.execute(Q, (guild_ID,))
+        result = cur.fetchall()
+        Db.close()
+
+        return result
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
 
 
 class SQLCog(commands.Cog):
@@ -597,12 +694,15 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
+            
+            
     # questionstats command
     @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats',
                       aliases=["Qstats", "qs"])
     @commands.cooldown(1, 2)
     async def QuestionStats(self, ctx):
         guild_id = str(ctx.guild.id)
+
 
         isBot = True
 
@@ -641,7 +741,7 @@ class SQLCog(commands.Cog):
                 r1.columns = ["Username", "Unanswered_Questions"]
                 joint = r1
 
-            usernames = joint["Username"]
+            usernames = joint.Username.unique()
             for i in range(len(usernames)):
                 member = await ctx.bot.fetch_user(usernames[i])
                 name = member.display_name
@@ -662,6 +762,124 @@ class SQLCog(commands.Cog):
 
         else:
             ctx.send("An error has occurred")
+            
+            
+    @commands.command(name='ReactionStats', brief="send reactions", description="Sends a csv file with reactions data")
+    @commands.cooldown(1, 2)
+    async def reactionCSV(self, ctx):
+        guild = ctx.guild.id
+
+        isBot = True
+
+        if not ctx.author.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        result = getReactionCSV(table, isBot, guild)
+
+        if result != -1:
+
+            df = pd.DataFrame.from_dict(result)
+
+            if not df.empty:
+                df.drop(["id", 'message_id', 'guild'], axis=1, inplace=True)
+                usernames = df.author.unique()
+                for i in range(len(usernames)):
+                    member = await ctx.bot.fetch_user(usernames[i])
+                    name = member.display_name
+                    to_replace = usernames[i]
+                    df.replace(to_replace, name, inplace=True)
+
+            if not isBot:
+                file_path = r"../src/csv/Reactions_Stats.csv"
+                df.to_csv(file_path, index=False)
+                await ctx.author.send(file=discord.File(file_path))
+
+            else:
+                file_path = r"src/csv/TestReactions_Stats.csv"
+                df.to_csv(file_path, index=False)
+
+            await ctx.send("Reactions Stats file sent.")
+
+        else:
+            await ctx.send("An error has occurred")
+
+            
+    # Detects when a reaction ia added to a message
+    @commands.Cog.listener()
+    @commands.cooldown(1, 2)
+    async def on_raw_reaction_add(self, payload):
+
+        Good = ['👍', '💯', '🙌', '👏']
+        Bad = ['👎', '😭', '😕']
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        # user = await self.bot.fetch_user(payload.user_id)
+        emoji = str(payload.emoji)
+
+        guild = payload.guild_id
+
+        info = [message.id, message.content, message.author.id]
+        if emoji in Good:
+            info.append(1)
+        else:
+            info.append(0)
+
+        if emoji in Bad:
+            info.append(1)
+        else:
+            info.append(0)
+        if emoji not in Good and emoji not in Bad:
+            info.append(1)
+        else:
+            info.append(0)
+
+        info.append(1)
+
+        member = payload.member
+        isBot = True
+
+        if not member.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        info.append(guild)
+        code = addReaction(table, info, isBot)
+
+
+    @commands.Cog.listener()
+    @commands.cooldown(1, 2)
+    async def on_raw_reaction_remove(self, payload):
+        Good = ['👍', '💯', '🙌', '👏']
+        Bad = ['👎', '😭', '😕']
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        user = await self.bot.fetch_user(payload.user_id)
+        emoji = str(payload.emoji)
+
+        if emoji in Good:
+            val = (message.id, 0)
+        elif emoji in Bad:
+            val = (message.id, 1)
+        else:
+            val = (message.id, 2)
+
+        isBot = True
+
+        if not user.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        code = removeReaction(table, val, isBot)
+
 
 
 def setup(bot):

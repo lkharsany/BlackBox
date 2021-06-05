@@ -88,7 +88,7 @@ async def test_ask(interface):
 
 @test_collector()
 async def test_reaction(interface):
-    await interface.assert_reaction_equals("ReactionsTestMessage", u"👍")
+    await interface.assert_reaction_equals("ReactionsTestMessage", u"\U0001F44D")
 
 
 @test_collector()

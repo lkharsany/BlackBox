@@ -675,7 +675,6 @@ class SQLCog(commands.Cog):
 
             if not df.empty:
                 df.drop(["id", 'message_id', 'guild'], axis=1, inplace=True)
-                print(df)
                 usernames = df["author"]
                 for i in range(len(usernames)):
                     member = await ctx.bot.fetch_user(usernames[i])
@@ -692,14 +691,6 @@ class SQLCog(commands.Cog):
                 #print(df)
                 file_path = r"src/csv/TestReactions_Stats.csv"
                 df.to_csv(file_path, index=False)
-                with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv',
-                                                                           'r') as t2:
-                    fileOne = t1.readlines()
-                    fileTwo = t2.readlines()
-
-                    isSame = True
-                    print("COG1",fileOne)
-                    print("COG2",fileTwo)
 
             await ctx.send("Reactions Stats file sent.")
 

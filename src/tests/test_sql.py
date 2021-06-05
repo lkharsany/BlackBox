@@ -75,6 +75,7 @@ created_channel = None
 @test_collector()
 async def test_reactionStats(interface):
     await interface.send_message("./ReactionStats")
+    await asyncio.sleep(2)
     with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv', 'r') as t2:
         fileOne = t1.readlines()
         fileTwo = t2.readlines()

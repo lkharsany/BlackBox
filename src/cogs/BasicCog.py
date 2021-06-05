@@ -46,7 +46,7 @@ class BasicCog(commands.Cog):
             await self.bot.process_commands(message)
 
         if message.content == "ReactionsTestMessage":
-            await self.bot.reaction(message, "👍")
+            await message.add_reaction(emoji=u"\U0001F44D")
             await self.bot.process_commands(message)
 
         if message.attachments:

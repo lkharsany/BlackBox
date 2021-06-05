@@ -645,7 +645,8 @@ class SQLCog(commands.Cog):
             for i in range(len(usernames)):
                 member = await ctx.bot.fetch_user(usernames[i])
                 name = member.display_name
-                usernames[i] = name
+                to_replace = usernames[i]
+                joint.replace(to_replace, name, inplace=True)
 
             if not isBot:
                 file_path = r"../src/csv/Question_Stats.csv"

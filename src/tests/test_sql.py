@@ -97,7 +97,6 @@ async def test_reactionStats(interface):
             print(fileTwo)
 
         if isSame:
-            print("HERE")
             await interface.get_delayed_reply(5, interface.assert_message_equals, "Reactions Stats file sent.")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')

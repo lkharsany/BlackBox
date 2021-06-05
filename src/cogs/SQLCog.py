@@ -675,7 +675,7 @@ class SQLCog(commands.Cog):
 
             if not df.empty:
                 df.drop(["id", 'message_id', 'guild'], axis=1, inplace=True)
-                usernames = df["author"]
+                usernames = df.author.unique()
                 for i in range(len(usernames)):
                     member = await ctx.bot.fetch_user(usernames[i])
                     name = member.display_name
@@ -688,7 +688,6 @@ class SQLCog(commands.Cog):
                 await ctx.author.send(file=discord.File(file_path))
 
             else:
-                #print(df)
                 file_path = r"src/csv/TestReactions_Stats.csv"
                 df.to_csv(file_path, index=False)
 
@@ -707,7 +706,7 @@ class SQLCog(commands.Cog):
 
         channel = await self.bot.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        #user = await self.bot.fetch_user(payload.user_id)
+        # user = await self.bot.fetch_user(payload.user_id)
         emoji = str(payload.emoji)
 
         guild = payload.guild_id
@@ -749,7 +748,6 @@ class SQLCog(commands.Cog):
     @commands.Cog.listener()
     @commands.cooldown(1, 2)
     async def on_raw_reaction_remove(self, payload):
-
         Good = ['👍', '💯', '🙌', '👏']
         Bad = ['👎', '😭', '😕']
 

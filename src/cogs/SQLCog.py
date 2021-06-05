@@ -287,7 +287,6 @@ def addReaction(table, val, isBot):
                 cur.execute(Q, val[0])
         else:
             Q = f"""INSERT INTO {table} (message_id, message, author, good_reaction, bad_reaction, other_reaction, total_reaction,guild) Values (%s,%s,%s,%s,%s,%s,%s,%s)"""
-            print(val[7])
             cur.execute(Q, val)
 
         conn.commit()

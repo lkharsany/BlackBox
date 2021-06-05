@@ -707,12 +707,12 @@ class SQLCog(commands.Cog):
 
         channel = await self.bot.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        user = await self.bot.fetch_user(payload.user_id)
+        #user = await self.bot.fetch_user(payload.user_id)
         emoji = str(payload.emoji)
 
         guild = payload.guild_id
 
-        info = [message.id, message.content, user.id]
+        info = [message.id, message.content, message.author]
         if emoji in Good:
             info.append(1)
         else:

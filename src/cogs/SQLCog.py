@@ -697,7 +697,7 @@ class SQLCog(commands.Cog):
                     fileTwo = t2.readlines()
 
                     isSame = True
-                    print("COG",fileOne)
+                    print("COG1",fileOne)
                     print("COG",fileTwo)
 
             await ctx.send("Reactions Stats file sent.")

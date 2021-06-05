@@ -680,12 +680,12 @@ class SQLCog(commands.Cog):
             print("name",
             member.display_name)
 
-            """usernames = df["author"]
+            usernames = df["author"]
             for i in range(len(usernames)):
                 member = await ctx.bot.fetch_user(usernames[i])
                 name = member.display_name
                 to_replace = usernames[i]
-                df.replace(to_replace, name, inplace=True)"""
+                df.replace(to_replace, name, inplace=True)
 
             if not isBot:
                 file_path = r"../src/csv/Reactions_Stats.csv"

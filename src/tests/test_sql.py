@@ -146,7 +146,8 @@ async def test_questionStats(interface):
             isSame = False
 
         if isSame:
-            await interface.get_delayed_reply(2, interface.assert_message_equals, "Question Stats file sent.")
+            print("HERE")
+            await interface.get_delayed_reply(5, interface.assert_message_equals, "Question Stats file sent.")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 

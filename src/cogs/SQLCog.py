@@ -602,7 +602,6 @@ class SQLCog(commands.Cog):
                       aliases=["Qstats", "qs"])
     @commands.cooldown(1, 2)
     async def QuestionStats(self, ctx):
-        # used to "override" the table that the question is added to for testing purposes
         guild_id = str(ctx.guild.id)
 
         isBot = True
@@ -636,13 +635,12 @@ class SQLCog(commands.Cog):
                 name = member.display_name
                 usernames[i] = name
 
-
-
             if not isBot:
                 file_path = r"./csv/Question_Stats.csv"
                 joint.to_csv(file_path, index=False)
                 await ctx.author.send(file=discord.File(file_path))
             else:
+
                 file_path = r"./csv/TestQuestion_Stats.csv"
                 joint.to_csv(file_path, index=False)
 

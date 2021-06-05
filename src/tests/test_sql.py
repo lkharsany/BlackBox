@@ -70,16 +70,11 @@ def getLecturerQuestionsID(username):
 TESTER = os.getenv('Tester')
 test_collector = TestCollector()
 created_channel = None
-"""@test_collector()
-async def test_reaction(interface):
-    """
+
 
 @test_collector()
 async def test_reactionStats(interface):
-    await interface.send_message("ReactionsTestMessage")
-    await asyncio.sleep(2)
     await interface.send_message("./ReactionStats")
-
     with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv', 'r') as t2:
         fileOne = t1.readlines()
         fileTwo = t2.readlines()

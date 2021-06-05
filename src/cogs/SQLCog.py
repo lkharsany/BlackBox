@@ -678,7 +678,6 @@ class SQLCog(commands.Cog):
                 print(df)
                 usernames = df["author"]
                 for i in range(len(usernames)):
-                    print("ID",usernames[i])
                     member = await ctx.bot.fetch_user(usernames[i])
                     name = member.display_name
                     to_replace = usernames[i]

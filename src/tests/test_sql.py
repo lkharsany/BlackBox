@@ -7,6 +7,7 @@ from discord import Embed
 import asyncio
 
 
+
 class TravisDBConnect:
 
     def __init__(self):

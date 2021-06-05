@@ -19,7 +19,7 @@ FAQBrief = "Creates a FAQ Channel with all previously answered questions"
 userParticipation = "shows how many questions a user has asked/answered in the server"
 
 
-class DBConnect:
+class DBConnect: # pragma: no cover
 
     def __init__(self):
         self._username = os.getenv('db_username')
@@ -329,7 +329,7 @@ def addReaction(table, val, isBot):
 def removeReaction(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else:
+    else: # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -349,7 +349,7 @@ def removeReaction(table, val, isBot):
         Db.close()
         return 1
 
-    except pymysql.err as err:
+    except pymysql.err as err: # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -358,7 +358,7 @@ def removeReaction(table, val, isBot):
 def getReactionCSV(table, isBot, guild_ID):
     if isBot:
         Db = TravisDBConnect()
-    else:
+    else: # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -370,10 +370,10 @@ def getReactionCSV(table, isBot, guild_ID):
 
         return result
 
-    except pymysql.err as err:
+    except pymysql.err as err: # pragma: no cover
         print(err)
         Db.close()
-        return -1
+        return -1# pragma: no cover
 
 
 class SQLCog(commands.Cog):

@@ -1,13 +1,10 @@
-import csv
 import os
 import sys
-
 import pymysql.cursors
 from distest import TestCollector
 from distest import run_dtest_bot
 from discord import Embed
 import asyncio
-import pandas as pd
 
 
 class TravisDBConnect:
@@ -79,7 +76,7 @@ async def test_statsSent(interface):
     await interface.get_delayed_reply(1, interface.assert_message_equals, "Message Added")
     await interface.send_message("./stats")
 
-    with open('src/cogs/testGstats.csv', 'r') as t1, open('src/tests/testComparison.csv', 'r') as t2:
+    with open('src/csv/MStatsComparison.csv', 'r') as t1, open('src/csv/TestMessage_Stats.csv', 'r') as t2:
         fileone = t1.readlines()
         filetwo = t2.readlines()
 

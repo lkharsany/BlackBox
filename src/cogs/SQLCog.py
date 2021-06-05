@@ -305,6 +305,30 @@ def AddMessageCount(table, val, isBot):
         return -1
 
 
+
+
+
+def getQuestionCSV(table, isBot, guild_ID):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table} where server_id = %s"""
+        cur.execute(Q, (guild_ID,))
+        result = cur.fetchall()
+        Db.close()
+
+        return result
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -639,39 +663,48 @@ class SQLCog(commands.Cog):
         else:
             code = AddMessageCount(table, val, isBot)
 
-    @commands.command(name='stats')
+    @commands.command(name='MessageStats')
     async def generateCSV(self, ctx):
+
+        guild = ctx.guild.id
+
         isBot = True
+
         if not ctx.author.bot:
             table = "student_message_log"
             isBot = False
-            Db = DBConnect()
         else:
             table = "teststudent_message_log"
-            Db = TravisDBConnect()
 
-        conn = Db.open()
+        result = getQuestionCSV(table, isBot, guild)
 
-        serverID = ctx.guild.id
-        discordID = 829768047350251530
-        if isBot:
-            #print(table)
-            sql_q = pd.read_sql_query(
-                f'''select discord_id,discord_username from {table} where 
-                   server_id = {serverID} ''',
-                conn)
-            df = pd.DataFrame(sql_q)
-            df.to_csv(r'src/cogs/testGstats.csv', index=False, header=True)
+        if result != -1:
+            df = pd.DataFrame.from_dict(result)
+
+            if not df.empty:
+                df.drop(["id", "discord_username", 'server_id'], axis=1, inplace=True)
+                df.rename(columns={'discord_id': 'Username'}, inplace=True)
+                usernames = df.Username.unique()
+                for i in range(len(usernames)):
+                    member = await ctx.bot.fetch_user(usernames[i])
+                    name = member.display_name
+                    to_replace = usernames[i]
+                    df.replace(to_replace, name, inplace=True)
+                print(df)
+
+            if isBot:
+                file_path = r"src/csv/TestMessage_Stats.csv"
+                df.to_csv(file_path, index=False)
+
+            else:  # pragma: no cover
+                file_path = r"../src/csv/Message_Stats.csv"
+                df.to_csv(file_path, index=False)
+                await ctx.author.send(file=discord.File(file_path))
+
+            await ctx.send("Message Stats file sent.")
+
         else:
-            sql_q = pd.read_sql_query(
-                f'''select discord_id,discord_username,record_count,last_message_date,record_count_20 from {table} where 
-                   server_id = {serverID} ''',
-                conn)
-            df = pd.DataFrame(sql_q)
-            df.to_csv(r'./Gstats.csv', index=False, header=True)
-            await ctx.message.author.send(file=discord.File('./Gstats.csv'))
-
-        await ctx.message.channel.send("General Stats file sent.")
+            await ctx.send("An error has occurred")
 
 
 def setup(bot):

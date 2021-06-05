@@ -1,11 +1,13 @@
 import os
 from datetime import datetime
+from typing import DefaultDict
 
 import pymysql.cursors
 import discord
 from discord.ext import commands
 from discord.utils import get, find
 from sshtunnel import SSHTunnelForwarder
+import pandas as pd
 
 AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
 answeredBrief = "Usage: Answer <question id>\n Will then need to send your answer prefixed with  the \"answer:\" when " \
@@ -16,9 +18,11 @@ AnsweredDesc = "Removes Answered Question from Database and adds It to the answe
                "Allocated Roles Can Access This Command "
 
 FAQBrief = "Creates a FAQ Channel with all previously answered questions"
+userParticipation = "shows how many questions a user has asked/answered in the server"
 
 
 class DBConnect:
+
     def __init__(self):
         self._username = os.getenv('db_username')
         self._password = os.getenv('db_password')
@@ -258,6 +262,33 @@ def getReferredQuestionRow(table, ID, isBot):
         return -1
 
 
+def QuestionStats(qTable, aTable, guild_id, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+
+        Q1 = f"""SELECT username, COUNT(*) as COUNT FROM {qTable} WHERE channel = {guild_id} GROUP BY username"""
+        cur.execute(Q1)
+        result1 = cur.fetchall()
+
+        Q2 = f"""SELECT asked_by, COUNT(*) as COUNT FROM {aTable} WHERE channel = {guild_id} GROUP BY asked_by"""
+        cur.execute(Q2)
+        result2 = cur.fetchall()
+        Db.close()
+
+        return result1, result2
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -292,6 +323,8 @@ class SQLCog(commands.Cog):
     async def Who(self, ctx, *, message=None):
         guild = ctx.guild.id
         # used to "override" the table that the question is added to for testing purposes
+        # guild = ctx.guild
+        # print(guild)
         isBot = True
         if not ctx.author.bot:
             table = "DiscordQuestions"
@@ -563,6 +596,72 @@ class SQLCog(commands.Cog):
 
         else:
             await ctx.send("Not a Valid Question ID")
+
+    # questionstats command
+    @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats',
+                      aliases=["Qstats", "qs"])
+    @commands.cooldown(1, 2)
+    async def QuestionStats(self, ctx):
+        guild_id = str(ctx.guild.id)
+
+        isBot = True
+
+        if not ctx.author.bot:
+            isBot = False
+            qTable = "DiscordQuestions"
+            aTable = "DiscordAnswers"
+        else:
+            qTable = "TestDiscordQuestions"
+            aTable = "TestDiscordAnswers"
+
+        result = QuestionStats(qTable, aTable, guild_id, isBot)
+
+        if result != -1:
+            result1 = result[0]
+            result2 = result[1]
+
+            r1 = pd.DataFrame.from_dict(result1)
+
+
+            r2 = pd.DataFrame.from_dict(result2)
+
+
+            if not r1.empty and not r2.empty:
+                r1.columns = ["Username", "Unanswered_Questions"]
+                r2.columns = ["Username", "Answered_Questions"]
+                joint = r1.merge(r2, on="Username", how="outer").fillna(0)
+                joint[['Unanswered_Questions', "Answered_Questions"]] = joint[
+                    ['Unanswered_Questions', "Answered_Questions"]].astype(int)
+
+            elif r1.empty:
+                r2.columns = ["Username", "Answered_Questions"]
+                joint = r2
+
+            else:
+                r1.columns = ["Username", "Unanswered_Questions"]
+                joint = r1
+
+            usernames = joint["Username"]
+            for i in range(len(usernames)):
+                member = await ctx.bot.fetch_user(usernames[i])
+                name = member.display_name
+                to_replace = usernames[i]
+                joint.replace(to_replace, name, inplace=True)
+
+            if not isBot:
+                file_path = r"../src/csv/Question_Stats.csv"
+                joint.to_csv(file_path, index=False)
+                await ctx.author.send(file=discord.File(file_path))
+
+            else:
+                file_path = r"src/csv/TestQuestion_Stats.csv"
+                joint.to_csv(file_path, index=False)
+
+            await ctx.send("Question Stats file sent.")
+
+
+        else:
+            ctx.send("An error has occurred")
 
 
 def setup(bot):

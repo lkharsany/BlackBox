@@ -712,7 +712,7 @@ class SQLCog(commands.Cog):
 
         guild = payload.guild_id
 
-        info = [message.id, message.content, message.author]
+        info = [message.id, message.content, message.author.id]
         if emoji in Good:
             info.append(1)
         else:

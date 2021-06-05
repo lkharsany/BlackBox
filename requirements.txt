@@ -4,6 +4,7 @@ python-dotenv~=0.17.0
 coveralls
 coverage
 pyyaml
+pandas
 PyMySQL~=0.9.3
 sshtunnel~=0.4.0
 discord-pretty-help

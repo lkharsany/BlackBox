@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import DefaultDict
 
 import pymysql.cursors
 from distest import TestCollector
@@ -10,6 +11,7 @@ import asyncio
 
 
 class TravisDBConnect:
+
     def __init__(self):
         self._username = "root"
         self._password = ""
@@ -65,7 +67,6 @@ def getLecturerQuestionsID(username):
     except Exception as e:
         print(e)
         return -99
-
 
 TESTER = os.getenv('Tester')
 test_collector = TestCollector()
@@ -154,6 +155,7 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
+
 @test_collector()
 async def test_refer(interface):
     Username = 829768047350251530
@@ -167,6 +169,35 @@ async def test_refer(interface):
                 await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Sent to Lecturer")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+
+@test_collector()
+async def test_questionStats(interface):
+    await interface.send_message("./QuestionStats")
+
+    with open('src/csv/QStatsComparison.csv', 'r') as t1, open('src/csv/TestQuestion_Stats.csv', 'r') as t2:
+        fileOne = t1.readlines()
+        fileTwo = t2.readlines()
+
+        isSame = True
+        sizeOne = len(fileOne)
+        sizeTwo = len(fileTwo)
+
+        if sizeOne == sizeTwo:
+            for i, j in zip(range(sizeOne), range(sizeTwo)):
+                if fileOne[i] != fileTwo[j]:
+                    isSame = False
+                    print(fileOne[i])
+                    print(fileTwo[j])
+        else:
+            isSame = False
+
+        if isSame:
+            print("HERE")
+            await interface.get_delayed_reply(5, interface.assert_message_equals, "Question Stats file sent.")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
 
 
 @test_collector()

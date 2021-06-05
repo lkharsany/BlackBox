@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import DefaultDict
 
 import pymysql.cursors
 import discord
@@ -17,9 +18,11 @@ AnsweredDesc = "Removes Answered Question from Database and adds It to the answe
                "Allocated Roles Can Access This Command "
 
 FAQBrief = "Creates a FAQ Channel with all previously answered questions"
+userParticipation = "shows how many questions a user has asked/answered in the server"
 
 
 class DBConnect:
+
     def __init__(self):
         self._username = os.getenv('db_username')
         self._password = os.getenv('db_password')
@@ -259,6 +262,39 @@ def getReferredQuestionRow(table, ID, isBot):
         return -1
 
 
+
+def QuestionStats(qTable, aTable, guild_id, isBot):
+      if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table} where guild = %s"""
+        cur.execute(Q, (guild_ID,))
+        result = cur.fetchall()
+        Db.close()
+
+        return result
+        Q1 = f"""SELECT username, COUNT(*) as COUNT FROM {qTable} WHERE channel = {guild_id} GROUP BY username"""
+        cur.execute(Q1)
+        result1 = cur.fetchall()
+
+        Q2 = f"""SELECT asked_by, COUNT(*) as COUNT FROM {aTable} WHERE channel = {guild_id} GROUP BY asked_by"""
+        cur.execute(Q2)
+        result2 = cur.fetchall()
+        Db.close()
+
+        return result1, result2
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+  
+  
+  
 def addReaction(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -307,6 +343,7 @@ def removeReaction(table, val, isBot):
         conn = Db.open()
         cur = conn.cursor()
 
+
         if (val[1] == 0):
             Q = f"""UPDATE {table} SET good_reaction = good_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
             cur.execute(Q, val[0])
@@ -325,7 +362,6 @@ def removeReaction(table, val, isBot):
         print(err)
         Db.close()
         return -1
-
 
 def getReactionCSV(table, isBot, guild_ID):
     if isBot:
@@ -346,6 +382,8 @@ def getReactionCSV(table, isBot, guild_ID):
         print(err)
         Db.close()
         return -1
+
+
 
 
 class SQLCog(commands.Cog):
@@ -382,6 +420,8 @@ class SQLCog(commands.Cog):
     async def Who(self, ctx, *, message=None):
         guild = ctx.guild.id
         # used to "override" the table that the question is added to for testing purposes
+        # guild = ctx.guild
+        # print(guild)
         isBot = True
         if not ctx.author.bot:
             table = "DiscordQuestions"
@@ -654,6 +694,76 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
+            
+            
+    # questionstats command
+    @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats',
+                      aliases=["Qstats", "qs"])
+    @commands.cooldown(1, 2)
+    async def QuestionStats(self, ctx):
+        guild_id = str(ctx.guild.id)
+
+
+        isBot = True
+
+        if not ctx.author.bot:
+            isBot = False
+            qTable = "DiscordQuestions"
+            aTable = "DiscordAnswers"
+        else:
+            qTable = "TestDiscordQuestions"
+            aTable = "TestDiscordAnswers"
+
+        result = QuestionStats(qTable, aTable, guild_id, isBot)
+
+        if result != -1:
+            result1 = result[0]
+            result2 = result[1]
+
+            r1 = pd.DataFrame.from_dict(result1)
+
+
+            r2 = pd.DataFrame.from_dict(result2)
+
+
+            if not r1.empty and not r2.empty:
+                r1.columns = ["Username", "Unanswered_Questions"]
+                r2.columns = ["Username", "Answered_Questions"]
+                joint = r1.merge(r2, on="Username", how="outer").fillna(0)
+                joint[['Unanswered_Questions', "Answered_Questions"]] = joint[
+                    ['Unanswered_Questions', "Answered_Questions"]].astype(int)
+
+            elif r1.empty:
+                r2.columns = ["Username", "Answered_Questions"]
+                joint = r2
+
+            else:
+                r1.columns = ["Username", "Unanswered_Questions"]
+                joint = r1
+
+            usernames = joint.Username.unique()
+            for i in range(len(usernames)):
+                member = await ctx.bot.fetch_user(usernames[i])
+                name = member.display_name
+                to_replace = usernames[i]
+                joint.replace(to_replace, name, inplace=True)
+
+            if not isBot:
+                file_path = r"../src/csv/Question_Stats.csv"
+                joint.to_csv(file_path, index=False)
+                await ctx.author.send(file=discord.File(file_path))
+
+            else:
+                file_path = r"src/csv/TestQuestion_Stats.csv"
+                joint.to_csv(file_path, index=False)
+
+            await ctx.send("Question Stats file sent.")
+
+
+        else:
+            ctx.send("An error has occurred")
+            
+            
     @commands.command(name='ReactionStats', brief="send reactions", description="Sends a csv file with reactions data")
     @commands.cooldown(1, 2)
     async def reactionCSV(self, ctx):
@@ -696,6 +806,7 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("An error has occurred")
 
+            
     # Detects when a reaction ia added to a message
     @commands.Cog.listener()
     @commands.cooldown(1, 2)
@@ -740,10 +851,6 @@ class SQLCog(commands.Cog):
         info.append(guild)
         code = addReaction(table, info, isBot)
 
-        '''
-        if(code == 1):
-            await channel.send('Reaction has been added to message')
-        '''
 
     @commands.Cog.listener()
     @commands.cooldown(1, 2)
@@ -772,10 +879,7 @@ class SQLCog(commands.Cog):
             table = "TestDiscordReactions"
 
         code = removeReaction(table, val, isBot)
-        '''
-        if (code == 1):
-            await channel.send('Reaction has been removed from message')
-        '''
+
 
 
 def setup(bot):

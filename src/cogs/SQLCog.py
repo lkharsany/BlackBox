@@ -1,7 +1,5 @@
 import os
 from datetime import datetime
-from typing import DefaultDict
-
 import pymysql.cursors
 import discord
 from discord.ext import commands
@@ -262,21 +260,16 @@ def getReferredQuestionRow(table, ID, isBot):
         return -1
 
 
-
 def QuestionStats(qTable, aTable, guild_id, isBot):
-      if isBot:
+    if isBot:
         Db = TravisDBConnect()
     else:
         Db = DBConnect()
+
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""Select * FROM {table} where guild = %s"""
-        cur.execute(Q, (guild_ID,))
-        result = cur.fetchall()
-        Db.close()
 
-        return result
         Q1 = f"""SELECT username, COUNT(*) as COUNT FROM {qTable} WHERE channel = {guild_id} GROUP BY username"""
         cur.execute(Q1)
         result1 = cur.fetchall()
@@ -292,9 +285,8 @@ def QuestionStats(qTable, aTable, guild_id, isBot):
         print(err)
         Db.close()
         return -1
-  
-  
-  
+
+
 def addReaction(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -343,7 +335,6 @@ def removeReaction(table, val, isBot):
         conn = Db.open()
         cur = conn.cursor()
 
-
         if (val[1] == 0):
             Q = f"""UPDATE {table} SET good_reaction = good_reaction - 1, total_reaction = total_reaction - 1 WHERE message_id = %s """
             cur.execute(Q, val[0])
@@ -362,6 +353,7 @@ def removeReaction(table, val, isBot):
         print(err)
         Db.close()
         return -1
+
 
 def getReactionCSV(table, isBot, guild_ID):
     if isBot:
@@ -382,8 +374,6 @@ def getReactionCSV(table, isBot, guild_ID):
         print(err)
         Db.close()
         return -1
-
-
 
 
 class SQLCog(commands.Cog):
@@ -694,15 +684,12 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
-            
-            
     # questionstats command
     @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats',
                       aliases=["Qstats", "qs"])
     @commands.cooldown(1, 2)
     async def QuestionStats(self, ctx):
         guild_id = str(ctx.guild.id)
-
 
         isBot = True
 
@@ -722,9 +709,7 @@ class SQLCog(commands.Cog):
 
             r1 = pd.DataFrame.from_dict(result1)
 
-
             r2 = pd.DataFrame.from_dict(result2)
-
 
             if not r1.empty and not r2.empty:
                 r1.columns = ["Username", "Unanswered_Questions"]
@@ -741,7 +726,7 @@ class SQLCog(commands.Cog):
                 r1.columns = ["Username", "Unanswered_Questions"]
                 joint = r1
 
-            usernames = joint.Username.unique()
+            usernames = joint["Username"]
             for i in range(len(usernames)):
                 member = await ctx.bot.fetch_user(usernames[i])
                 name = member.display_name
@@ -762,8 +747,7 @@ class SQLCog(commands.Cog):
 
         else:
             ctx.send("An error has occurred")
-            
-            
+
     @commands.command(name='ReactionStats', brief="send reactions", description="Sends a csv file with reactions data")
     @commands.cooldown(1, 2)
     async def reactionCSV(self, ctx):
@@ -806,7 +790,6 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("An error has occurred")
 
-            
     # Detects when a reaction ia added to a message
     @commands.Cog.listener()
     @commands.cooldown(1, 2)
@@ -851,7 +834,6 @@ class SQLCog(commands.Cog):
         info.append(guild)
         code = addReaction(table, info, isBot)
 
-
     @commands.Cog.listener()
     @commands.cooldown(1, 2)
     async def on_raw_reaction_remove(self, payload):
@@ -879,7 +861,6 @@ class SQLCog(commands.Cog):
             table = "TestDiscordReactions"
 
         code = removeReaction(table, val, isBot)
-
 
 
 def setup(bot):

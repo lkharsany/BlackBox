@@ -673,13 +673,15 @@ class SQLCog(commands.Cog):
 
             df = pd.DataFrame.from_dict(result)
 
-            df.drop(["id", 'message_id', 'guild'], axis=1, inplace=True)
-            usernames = df["author"]
-            for i in range(len(usernames)):
-                member = await ctx.bot.fetch_user(usernames[i])
-                name = member.display_name
-                to_replace = usernames[i]
-                df.replace(to_replace, name, inplace=True)
+            if not df.empty:
+                print(df)
+                df.drop(["id", 'message_id', 'guild'], axis=1, inplace=True)
+                usernames = df["author"]
+                for i in range(len(usernames)):
+                    member = await ctx.bot.fetch_user(usernames[i])
+                    name = member.display_name
+                    to_replace = usernames[i]
+                    df.replace(to_replace, name, inplace=True)
 
             if not isBot:
                 file_path = r"../src/csv/Reactions_Stats.csv"
@@ -687,7 +689,7 @@ class SQLCog(commands.Cog):
                 await ctx.author.send(file=discord.File(file_path))
 
             else:
-                print(df)
+                #print(df)
                 file_path = r"src/csv/TestReactions_Stats.csv"
                 df.to_csv(file_path, index=False)
 

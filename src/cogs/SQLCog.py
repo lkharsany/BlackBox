@@ -619,15 +619,27 @@ class SQLCog(commands.Cog):
         if result != -1:
             result1 = result[0]
             result2 = result[1]
+
             r1 = pd.DataFrame.from_dict(result1)
-            r1.columns = ["Username", "Unanswered_Questions"]
+
 
             r2 = pd.DataFrame.from_dict(result2)
-            r2.columns = ["Username", "Answered_Questions"]
 
-            joint = r1.merge(r2, on="Username", how="outer").fillna(0)
-            joint[['Unanswered_Questions', "Answered_Questions"]] = joint[
-                ['Unanswered_Questions', "Answered_Questions"]].astype(int)
+
+            if not r1.empty and not r2.empty:
+                r1.columns = ["Username", "Unanswered_Questions"]
+                r2.columns = ["Username", "Answered_Questions"]
+                joint = r1.merge(r2, on="Username", how="outer").fillna(0)
+                joint[['Unanswered_Questions', "Answered_Questions"]] = joint[
+                    ['Unanswered_Questions', "Answered_Questions"]].astype(int)
+
+            elif r1.empty:
+                r2.columns = ["Username", "Answered_Questions"]
+                joint = r2
+
+            else:
+                r1.columns = ["Username", "Unanswered_Questions"]
+                joint = r1
 
             usernames = joint["Username"]
             for i in range(len(usernames)):
@@ -636,12 +648,12 @@ class SQLCog(commands.Cog):
                 usernames[i] = name
 
             if not isBot:
-                file_path = r"./csv/Question_Stats.csv"
+                file_path = r"../src/csv/Question_Stats.csv"
                 joint.to_csv(file_path, index=False)
                 await ctx.author.send(file=discord.File(file_path))
-            else:
 
-                file_path = r"./csv/TestQuestion_Stats.csv"
+            else:
+                file_path = r"../src/csv/TestQuestion_Stats.csv"
                 joint.to_csv(file_path, index=False)
 
             await ctx.send("Question Stats file sent.")

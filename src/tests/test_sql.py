@@ -1,12 +1,9 @@
 import os
 import sys
-from typing import DefaultDict
-
 import pymysql.cursors
 from distest import TestCollector
 from distest import run_dtest_bot
 from discord import Embed
-import pandas as pd
 import asyncio
 
 
@@ -67,6 +64,7 @@ def getLecturerQuestionsID(username):
     except Exception as e:
         print(e)
         return -99
+
 
 TESTER = os.getenv('Tester')
 test_collector = TestCollector()
@@ -155,7 +153,6 @@ async def test_answer(interface):
             await interface.get_delayed_reply(2, interface.assert_message_equals, "Question has been Answered")
 
 
-
 @test_collector()
 async def test_refer(interface):
     Username = 829768047350251530
@@ -197,7 +194,6 @@ async def test_questionStats(interface):
             await interface.get_delayed_reply(5, interface.assert_message_equals, "Question Stats file sent.")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-
 
 
 @test_collector()

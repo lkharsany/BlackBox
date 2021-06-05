@@ -88,13 +88,18 @@ async def test_statsSent(interface):
         for i, j in zip(range(sizeOne), range(sizeTwo)):
             if fileone[i] != filetwo[j]:
                 isSame = False
+                print(fileone[i])
+                print(filetwo[i])
     else:
         isSame = False
+        print(fileone)
+        print(filetwo)
 
     if isSame:
         await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
 
 @test_collector()
 async def test_ask(interface):

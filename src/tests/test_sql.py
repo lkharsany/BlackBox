@@ -74,7 +74,7 @@ created_channel = None
 async def test_statsSent(interface):
     await interface.send_message("Message added test")
     await interface.get_delayed_reply(1, interface.assert_message_equals, "Message Added")
-    await interface.send_message("./stats")
+    await interface.send_message("./MessageStats")
 
     with open('src/csv/MStatsComparison.csv', 'r') as t1, open('src/csv/TestMessage_Stats.csv', 'r') as t2:
         fileone = t1.readlines()

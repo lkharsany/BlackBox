@@ -374,6 +374,77 @@ def getReactionCSV(table, isBot, guild_ID):
         print(err)
         Db.close()
         return -1
+      
+      
+      
+def AddMessageCount(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Val = [val[0], val[4]]
+        Q = f"""SELECT count(*) FROM {table} WHERE discord_id = %s AND server_id = %s """
+        cur.execute(Q, Val)
+
+        newVal = [val[2], str(val[0]), str(val[4])]
+        doesUserExist = cur.fetchone()
+        doesUserExist = doesUserExist.get('count(*)')
+        if doesUserExist > 0:
+            if val[3] == 1:
+                Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s, record_count_20 = 
+                record_count_20 +1 WHERE  %s = discord_id AND server_id = %s """
+                cur.execute(Q, newVal)
+            else:
+                Q = f"""UPDATE {table} set record_count = record_count +1,last_message_date = %s WHERE 
+                discord_id = %s and server_id = %s """
+                cur.execute(Q, newVal)
+            conn.commit()
+        else:
+            if val[3] == 1:
+                val = [val[0], val[1], 1, val[2], 1, val[4]]
+                Q = f"""INSERT INTO {table} (discord_id, discord_username, record_count, last_message_date,
+                record_count_20, server_id) Values (%s,%s,%s,%s,%s,%s) """
+                cur.execute(Q, val)
+            else:
+                val = [val[0], val[1], 1, val[2], 0, val[4]]
+                Q = f"""INSERT INTO {table} (discord_id, discord_username, record_count, last_message_date,
+                record_count_20, server_id) 
+                Values (%s,%s,%s,%s,%s,%s) """
+                cur.execute(Q, val)
+            conn.commit()
+        Db.close()
+        return 1
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+
+
+def getMessageCSV(table, isBot, guild_ID):
+    if isBot:
+        Db = TravisDBConnect()
+    else: # pragma: no cover
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table} where server_id = %s"""
+        cur.execute(Q, (guild_ID,))
+        result = cur.fetchall()
+        Db.close()
+
+        return result
+
+    except pymysql.err as err: # pragma: no cover
+        print(err)
+        Db.close()
+        return -1
+
 
 
 class SQLCog(commands.Cog):
@@ -744,10 +815,10 @@ class SQLCog(commands.Cog):
 
             await ctx.send("Question Stats file sent.")
 
-
         else:
             ctx.send("An error has occurred")
 
+    
     @commands.command(name='ReactionStats', brief="send reactions", description="Sends a csv file with reactions data")
     @commands.cooldown(1, 2)
     async def reactionCSV(self, ctx):
@@ -862,6 +933,79 @@ class SQLCog(commands.Cog):
 
         code = removeReaction(table, val, isBot)
 
+    @commands.Cog.listener("on_message")
+    @commands.cooldown(1, 2)
+    async def on_messageSQL(self, message):
+        if message.author == self.bot.user:
+            return
+        userID = message.author.id
+        username = str(self.bot.get_user(userID))
+        curr_date = datetime.now().strftime('%Y-%m-%d')
+        serverID = message.guild.id
+        if len(message.content) > 20:
+            biggerthan20 = 1
+        else:
+            biggerthan20 = 0
+        val = (userID, username, curr_date, biggerthan20, serverID)
+        isBot = True
+        if not message.author.bot:
+            table = "student_message_log"
+            isBot = False
+        else:
+            table = "teststudent_message_log"
 
+        if isBot and (message.content == "Message added test"):
+            code = AddMessageCount(table, val, isBot)
+            if code == 1:
+                await message.channel.send('Message Added')
+        else:
+            code = AddMessageCount(table, val, isBot)
+
+    
+    @commands.command(name='MessageStats')
+    async def generateCSV(self, ctx):
+
+        guild = ctx.guild.id
+
+        isBot = True
+
+        if not ctx.author.bot:
+            table = "student_message_log"
+            isBot = False
+        else:
+            table = "teststudent_message_log"
+
+        result = getMessageCSV(table, isBot, guild)
+
+        if result != -1:
+            df = pd.DataFrame.from_dict(result)
+
+            if not df.empty:
+                df.drop(["id", "discord_username", 'server_id'], axis=1, inplace=True)
+                df.rename(columns={'discord_id': 'Username'}, inplace=True)
+                usernames = df.Username.unique()
+                for i in range(len(usernames)):
+                    member = await ctx.bot.fetch_user(usernames[i])
+                    name = member.display_name
+                    to_replace = usernames[i]
+                    df.replace(to_replace, name, inplace=True)
+
+            if isBot:
+                df.drop(["last_message_date"], axis=1, inplace=True)
+                file_path = r"src/csv/TestMessage_Stats.csv"
+                df.to_csv(file_path, index=False)
+
+            else:  # pragma: no cover
+                file_path = r"../src/csv/Message_Stats.csv"
+                df.to_csv(file_path, index=False)
+                await ctx.author.send(file=discord.File(file_path))
+
+            await ctx.send("Message Stats file sent.")
+
+        else:
+            await ctx.send("An error has occurred")
+
+        
+        
 def setup(bot):
     bot.add_cog(SQLCog(bot))

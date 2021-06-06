@@ -73,6 +73,39 @@ created_channel = None
 
 
 @test_collector()
+async def test_messageStats(interface):
+    await interface.send_message("Message added test")
+    await interface.get_delayed_reply(1, interface.assert_message_equals, "Message Added")
+    await interface.send_message("./MessageStats")
+    await asyncio.sleep(2)
+    with open('src/csv/MStatsComparison.csv', 'r') as t1, open('src/csv/TestMessage_Stats.csv', 'r') as t2:
+        fileone = t1.readlines()
+        filetwo = t2.readlines()
+
+    isSame = True
+    sizeOne = len(fileone)
+    sizeTwo = len(filetwo)
+
+    if sizeOne == sizeTwo:
+        for i, j in zip(range(sizeOne), range(sizeTwo)):
+            if fileone[i] != filetwo[j]:
+                isSame = False
+                print("unequal")
+                print(fileone[i])
+                print(filetwo[i])
+    else:
+        isSame = False
+        print("uneven")
+        print(fileone)
+        print(filetwo)
+
+    if isSame:
+        await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Stats file sent.")
+    else:
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+        
+        
+@test_collector()
 async def test_reactionStats(interface):
     await interface.send_message("./ReactionStats")
     await asyncio.sleep(2)

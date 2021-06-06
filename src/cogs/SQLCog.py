@@ -19,7 +19,7 @@ FAQBrief = "Creates a FAQ Channel with all previously answered questions"
 userParticipation = "shows how many questions a user has asked/answered in the server"
 
 
-class DBConnect: # pragma: no cover
+class DBConnect:  # pragma: no cover
 
     def __init__(self):
         self._username = os.getenv('db_username')
@@ -81,7 +81,7 @@ def addQuestion(table, val, isBot):
     # tries to insert values into table.
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -91,7 +91,7 @@ def addQuestion(table, val, isBot):
         conn.commit()
         Db.close()
         return 1
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -100,7 +100,7 @@ def addQuestion(table, val, isBot):
 def queryQuestions(table, isBot, Channel):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -110,7 +110,7 @@ def queryQuestions(table, isBot, Channel):
         result = cur.fetchall()
         Db.close()
         return result
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -119,7 +119,7 @@ def queryQuestions(table, isBot, Channel):
 def getQuestionRow(table, ID, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
 
@@ -134,7 +134,7 @@ def getQuestionRow(table, ID, isBot):
             return result
         else:
             return -1
-    except Exception as e: # pragma: no cover
+    except Exception as e:  # pragma: no cover
         print(e)
         Db.close()
         return -1
@@ -143,7 +143,7 @@ def getQuestionRow(table, ID, isBot):
 def addAnswer(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -153,7 +153,7 @@ def addAnswer(table, val, isBot):
         conn.commit()
         Db.close()
         return 1
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -162,7 +162,7 @@ def addAnswer(table, val, isBot):
 def delQuestion(table, ID, isBot, isLecture):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -175,7 +175,7 @@ def delQuestion(table, ID, isBot, isLecture):
         conn.commit()
         Db.close()
         return 1
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -195,7 +195,7 @@ def queryAnswers(table, isBot, channel):
     try:
         if isBot:
             Db = TravisDBConnect()
-        else: # pragma: no cover
+        else:  # pragma: no cover
             Db = DBConnect()
         conn = Db.open()
         cur = conn.cursor()
@@ -203,7 +203,7 @@ def queryAnswers(table, isBot, channel):
         cur.execute(Q, (channel,))
         result = cur.fetchall()
         return result
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         return -1
 
@@ -219,7 +219,7 @@ def createAnswerEmbed(ans_member, question, answer):
 def addReferredQuestions(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -230,7 +230,7 @@ def addReferredQuestions(table, val, isBot):
         Db.close()
         return 1
 
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -239,7 +239,7 @@ def addReferredQuestions(table, val, isBot):
 def getReferredQuestionRow(table, ID, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
 
@@ -254,7 +254,7 @@ def getReferredQuestionRow(table, ID, isBot):
             return result
         else:
             return -1
-    except Exception as e: # pragma: no cover
+    except Exception as e:  # pragma: no cover
         print(e)
         Db.close()
         return -1
@@ -263,7 +263,7 @@ def getReferredQuestionRow(table, ID, isBot):
 def QuestionStats(qTable, aTable, guild_id, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
 
     try:
@@ -281,7 +281,7 @@ def QuestionStats(qTable, aTable, guild_id, isBot):
 
         return result1, result2
 
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -290,7 +290,7 @@ def QuestionStats(qTable, aTable, guild_id, isBot):
 def addReaction(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -320,7 +320,7 @@ def addReaction(table, val, isBot):
         conn.commit()
         Db.close()
         return 1
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -329,7 +329,7 @@ def addReaction(table, val, isBot):
 def removeReaction(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -349,7 +349,7 @@ def removeReaction(table, val, isBot):
         Db.close()
         return 1
 
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -358,7 +358,7 @@ def removeReaction(table, val, isBot):
 def getReactionCSV(table, isBot, guild_ID):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -370,13 +370,12 @@ def getReactionCSV(table, isBot, guild_ID):
 
         return result
 
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
-      
-      
-      
+
+
 def AddMessageCount(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -423,12 +422,10 @@ def AddMessageCount(table, val, isBot):
         return -1
 
 
-
-
 def getMessageCSV(table, isBot, guild_ID):
     if isBot:
         Db = TravisDBConnect()
-    else: # pragma: no cover
+    else:  # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -440,11 +437,10 @@ def getMessageCSV(table, isBot, guild_ID):
 
         return result
 
-    except pymysql.err as err: # pragma: no cover
+    except pymysql.err as err:  # pragma: no cover
         print(err)
         Db.close()
         return -1
-
 
 
 class SQLCog(commands.Cog):
@@ -464,7 +460,7 @@ class SQLCog(commands.Cog):
         val = (user, message, curr_date, curr_time, guild)
         # used to "override" the table that the question is added to for testing purposes
         isBot = True
-        if not ctx.message.author.bot: # pragma: no cover
+        if not ctx.message.author.bot:  # pragma: no cover
             table = "DiscordQuestions"
             isBot = False
         else:
@@ -676,7 +672,6 @@ class SQLCog(commands.Cog):
                             await lecturer.send("Use Command \'./Lecturer\' <question id>")
                         await ctx.send("Message Sent to Lecturer")
 
-
         else:
             await ctx.send("Not a Valid Question ID")
 
@@ -759,7 +754,7 @@ class SQLCog(commands.Cog):
     @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats',
                       aliases=["Qstats", "qs"])
     @commands.cooldown(1, 2)
-    async def QuestionStats(self, ctx):
+    async def questionCSV(self, ctx):
         guild_id = str(ctx.guild.id)
 
         isBot = True
@@ -808,7 +803,7 @@ class SQLCog(commands.Cog):
                 file_path = r"src/csv/TestQuestion_Stats.csv"
                 joint.to_csv(file_path, index=False)
 
-            else: # pragma: no cover
+            else:  # pragma: no cover
                 file_path = r"../src/csv/Question_Stats.csv"
                 joint.to_csv(file_path, index=False)
                 await ctx.author.send(file=discord.File(file_path))
@@ -818,7 +813,6 @@ class SQLCog(commands.Cog):
         else:
             ctx.send("An error has occurred")
 
-    
     @commands.command(name='ReactionStats', brief="send reactions", description="Sends a csv file with reactions data")
     @commands.cooldown(1, 2)
     async def reactionCSV(self, ctx):
@@ -851,7 +845,7 @@ class SQLCog(commands.Cog):
                 file_path = r"src/csv/TestReactions_Stats.csv"
                 df.to_csv(file_path, index=False)
 
-            else: # pragma: no cover
+            else:  # pragma: no cover
                 file_path = r"../src/csv/Reactions_Stats.csv"
                 df.to_csv(file_path, index=False)
                 await ctx.author.send(file=discord.File(file_path))
@@ -961,9 +955,8 @@ class SQLCog(commands.Cog):
         else:
             code = AddMessageCount(table, val, isBot)
 
-    
     @commands.command(name='MessageStats')
-    async def generateCSV(self, ctx):
+    async def messageCSV(self, ctx):
 
         guild = ctx.guild.id
 
@@ -1005,7 +998,6 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("An error has occurred")
 
-        
-        
+
 def setup(bot):
     bot.add_cog(SQLCog(bot))

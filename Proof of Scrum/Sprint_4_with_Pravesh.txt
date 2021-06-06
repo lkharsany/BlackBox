@@ -1,0 +1,18 @@
+Sprint 4 Meeting with Pravesh
+Meeting Minutes
+
+Meeting took place on 24th May on Discord.
+ 
+•	Features to be implemented: 
+
+1. 	Refer question to lecturer ( dm lecturer)
+	-When the lecturer answers (dm tutor and student)
+
+2.	Keep track of stats for students.
+	-record how many messages each student sends.
+	-General messaging.
+	-Tutor queue.
+	-DM lecturer report of stats.
+
+3.	Keep track of reactions
+	-Set reactions to keep track of.

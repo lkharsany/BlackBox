@@ -98,6 +98,7 @@ async def test_messageStats(interface):
         print(filetwo)
 
     if isSame:
+        print("HERE")
         await interface.get_delayed_reply(2, interface.assert_message_equals, "General Stats file sent.")
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')

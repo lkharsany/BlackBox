@@ -695,9 +695,6 @@ class SQLCog(commands.Cog):
                 df.drop(["last_message_date"], axis=1, inplace=True)
                 file_path = r"src/csv/TestMessage_Stats.csv"
                 df.to_csv(file_path, index=False)
-                with open('src/csv/TestMessage_Stats.csv', 'r') as t2:
-                    f = t2.readlines()
-                    print(f)
 
             else:  # pragma: no cover
                 file_path = r"../src/csv/Message_Stats.csv"

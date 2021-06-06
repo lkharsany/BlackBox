@@ -8,6 +8,7 @@ import discord
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix='./', intents=intents,help_command=PrettyHelp(sort_commands=True, show_index=False))
 
+
 # NEED TO RUN IT WITH ARGUMENT -t for testing
 if (len(sys.argv) - 1) != 0 and sys.argv[1] == "-t":
     from distest.patches import patch_target
@@ -16,6 +17,9 @@ else:
     load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
+
+
 bot.load_extension("cogs.SQLCog")
 bot.load_extension("cogs.BasicCog")
+
 bot.run(TOKEN)

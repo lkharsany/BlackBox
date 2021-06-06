@@ -7,7 +7,9 @@ from discord import Embed
 import asyncio
 
 
+
 class TravisDBConnect:
+
     def __init__(self):
         self._username = "root"
         self._password = ""
@@ -101,6 +103,36 @@ async def test_messageStats(interface):
         await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Stats file sent.")
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+        
+        
+@test_collector()
+async def test_reactionStats(interface):
+    await interface.send_message("./ReactionStats")
+    await asyncio.sleep(2)
+    with open('src/csv/RStatsComparison.csv', 'r') as t1, open('src/csv/TestReactions_Stats.csv', 'r') as t2:
+        fileOne = t1.readlines()
+        fileTwo = t2.readlines()
+
+        isSame = True
+        sizeOne = len(fileOne)
+        sizeTwo = len(fileTwo)
+
+        if sizeOne == sizeTwo:
+            for i, j in zip(range(sizeOne), range(sizeTwo)):
+                if fileOne[i] != fileTwo[j]:
+                    isSame = False
+                    print(fileOne[i])
+                    print(fileTwo[j])
+        else:
+            isSame = False
+            print("Uneven")
+            print(fileOne)
+            print(fileTwo)
+
+        if isSame:
+            await interface.get_delayed_reply(5, interface.assert_message_equals, "Reactions Stats file sent.")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 
 
 @test_collector()
@@ -166,6 +198,34 @@ async def test_refer(interface):
             if x:
                 message = await interface.send_message(f"./Refer {new_ID}")
                 await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Sent to Lecturer")
+        else:
+            await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
+
+
+@test_collector()
+async def test_questionStats(interface):
+    await interface.send_message("./QuestionStats")
+
+    with open('src/csv/QStatsComparison.csv', 'r') as t1, open('src/csv/TestQuestion_Stats.csv', 'r') as t2:
+        fileOne = t1.readlines()
+        fileTwo = t2.readlines()
+
+        isSame = True
+        sizeOne = len(fileOne)
+        sizeTwo = len(fileTwo)
+
+        if sizeOne == sizeTwo:
+            for i, j in zip(range(sizeOne), range(sizeTwo)):
+                if fileOne[i] != fileTwo[j]:
+                    isSame = False
+                    print(fileOne[i])
+                    print(fileTwo[j])
+        else:
+            isSame = False
+
+        if isSame:
+            print("HERE")
+            await interface.get_delayed_reply(5, interface.assert_message_equals, "Question Stats file sent.")
         else:
             await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
 

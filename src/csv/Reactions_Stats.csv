@@ -1,0 +1,7 @@
+message,author,good_reaction,bad_reaction,other_reaction,total_reaction
+Shutting Down...,BlackBox,0,0,1,1
+"```
+test_shutdown    ✓ Passed
+```",TesterBot,1,0,0,1
+ReactionsTestMessage,Nabeel,1,0,0,1
+Shutting Down...,BlackBox,1,0,0,1

@@ -693,6 +693,7 @@ class SQLCog(commands.Cog):
 
             if isBot:
                 df.drop(["last_message_date"], axis=1, inplace=True)
+                print(df)
                 file_path = r"src/csv/TestMessage_Stats.csv"
                 df.to_csv(file_path, index=False)
 

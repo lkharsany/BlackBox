@@ -690,10 +690,8 @@ class SQLCog(commands.Cog):
                     name = member.display_name
                     to_replace = usernames[i]
                     df.replace(to_replace, name, inplace=True)
-                print(df)
 
             if isBot:
-
                 df.drop(["last_message_date"], axis=1, inplace=True)
                 file_path = r"src/csv/TestMessage_Stats.csv"
                 df.to_csv(file_path, index=False)

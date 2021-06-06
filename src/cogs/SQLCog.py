@@ -305,13 +305,10 @@ def AddMessageCount(table, val, isBot):
         return -1
 
 
-
-
-
-def getQuestionCSV(table, isBot, guild_ID):
+def getMessageCSV(table, isBot, guild_ID):
     if isBot:
         Db = TravisDBConnect()
-    else:
+    else: # pragma: no cover
         Db = DBConnect()
     try:
         conn = Db.open()
@@ -323,7 +320,7 @@ def getQuestionCSV(table, isBot, guild_ID):
 
         return result
 
-    except pymysql.err as err:
+    except pymysql.err as err: # pragma: no cover
         print(err)
         Db.close()
         return -1
@@ -656,7 +653,7 @@ class SQLCog(commands.Cog):
         else:
             table = "teststudent_message_log"
 
-        if (isBot == True) and (message.content == "Message added test"):
+        if isBot and (message.content == "Message added test"):
             code = AddMessageCount(table, val, isBot)
             if code == 1:
                 await message.channel.send('Message Added')
@@ -676,7 +673,7 @@ class SQLCog(commands.Cog):
         else:
             table = "teststudent_message_log"
 
-        result = getQuestionCSV(table, isBot, guild)
+        result = getMessageCSV(table, isBot, guild)
 
         if result != -1:
             df = pd.DataFrame.from_dict(result)

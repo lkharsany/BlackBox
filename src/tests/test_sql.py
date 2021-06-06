@@ -77,8 +77,6 @@ async def test_statsSent(interface):
     await interface.send_message("./MessageStats")
 
     with open('src/csv/MStatsComparison.csv', 'r') as t1, open('src/csv/TestMessage_Stats.csv', 'r') as t2:
-        print(t1)
-        print(t2)
         fileone = t1.readlines()
         filetwo = t2.readlines()
 

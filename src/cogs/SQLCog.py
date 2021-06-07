@@ -40,7 +40,7 @@ ReferBrief = "Usage: Refer <question id>\nUsed by tutors to refer a question the
 ReferDesc = "Refers a question to a lecturer.\nThe question will then be sent to the lecturer via dm"
 
 isSSH = os.getenv('using_SSH')
-if isSSH.lower() == "true":
+if isSSH.lower() == "true": # pragma: no cover
     class DBConnect:  # pragma: no cover
         def __init__(self):
             self._username = os.getenv('db_username')
@@ -76,8 +76,8 @@ if isSSH.lower() == "true":
         def close(self):
             self.Connection.close()
             self._Server.stop()
-else:
-    class DBConnect:
+else: # pragma: no cover
+    class DBConnect: # pragma: no cover
         def __init__(self):
             self._username = os.getenv('db_username')
             self._password = os.getenv('db_password')
@@ -96,7 +96,7 @@ else:
             return self.Connection
 
         def close(self):
-            self.Connection.close()
+            self.Connection.close() # pragma: no cover
 
 
 # USED FOR TESTING DO NOT CHANGE.

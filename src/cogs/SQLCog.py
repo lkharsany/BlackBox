@@ -7,16 +7,38 @@ from discord.utils import get, find
 from sshtunnel import SSHTunnelForwarder
 import pandas as pd
 
-AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
-answeredBrief = "Usage: Answer <question id>\n Will then need to send your answer prefixed with  the \"answer:\" when " \
-                "prompted \nRemoves Answered Question from Database "
-WhoDesc = "Displays all Questions, Users and ID as an Embeded Message\n Only Users with  Allocated Roles Can Access " \
-          "This Command "
-AnsweredDesc = "Removes Answered Question from Database and adds It to the answered Table \n Only Users with " \
-               "Allocated Roles Can Access This Command "
+answeredBrief = "Usage: Answer <question id>\nYou will then need to send your answer prefixed with the \"answer:\" " \
+                "when " \
+                "prompted. \nSends the answer to the person who asked the question"
+AnsweredDesc = "Used by tutors or lecturers to answer questions asked by students. \nWill then send the answer to the " \
+               "student who asked the question. "
 
+
+WhoDesc = "Displays all Questions, Users and ID as an Embedded Message"
+WhoBrief = "Displays all qustions asked by students as Embedded Messages"
+
+AskBrief = "Usage: Ask <question>\nAdds Question to the Database"
+AskDesc = "Adds Question to the database where it can be queried at later time"
+
+QStatsBrief = "Generates a CSV file with the amount of questions students asked on the server is any."
+QStatsDesc = "Sends a CSV via DM with the amount of questions students asked on the server is any."
+
+RStatsBrief = "Generates a CSV file with the amount of reactions messages have if any."
+RStatsDesc = "Sends a CSV via DM with the amount of positive or negative reactions messages have if any."
+
+MStatsBrief = "Generates a CSV file with the amount of messages students have sent in the server"
+MStatsDesc = "Sends a CSV via DM with the amount of messages students have sent in the server. \nThe messages are grouped by length."
+
+
+DelFaqBrief = "Deletes the FAQ Channel if it exists"
 FAQBrief = "Creates a FAQ Channel with all previously answered questions"
-userParticipation = "shows how many questions a user has asked/answered in the server"
+
+LecturerBrief = "Usage: Lecturer <question id>\nUsed by lecturer to answer referred questions"
+LecturerDesc = "Used to answer referred question. \nIt will then send the answer to both the tutor and the person who " \
+               "asked it "
+
+ReferBrief = "Usage: Refer <question id>\nUsed by tutors to refer a question they don't know to the lecturer"
+ReferDesc = "Refers a question to a lecturer.\nThe question will then be sent to the lecturer via dm"
 
 
 class DBConnect:  # pragma: no cover
@@ -450,7 +472,7 @@ class SQLCog(commands.Cog):
         self.description = "Commands to Add, Display and Remove Questions from a Database"
 
     # Ask command
-    @commands.command(brief=AskBrief, description="Adds Question to the Database", usage="<question>", name='Ask')
+    @commands.command(name='Ask',brief=AskBrief, description=AskDesc, usage="<question>",aliases=["ask"])
     @commands.cooldown(1, 2)
     async def Ask(self, ctx, *, message):
         guild = ctx.guild.id
@@ -471,7 +493,7 @@ class SQLCog(commands.Cog):
             await ctx.send('Question Added')
 
     # Who command
-    @commands.command(brief="Displays All Questions", description=WhoDesc, name='Who')
+    @commands.command(name='Who', brief=WhoBrief, description=WhoDesc, aliases=["who"])
     @commands.cooldown(1, 2)
     # @commands.has_role("")
     async def Who(self, ctx, *, message=None):
@@ -502,7 +524,8 @@ class SQLCog(commands.Cog):
                 await ctx.send("No Open Questions. Nice!")
 
     @commands.cooldown(1, 2)
-    @commands.command(brief=answeredBrief, description=AnsweredDesc, usage="<question id>", name='Answer')
+    @commands.command(name='Answer', brief=answeredBrief, description=AnsweredDesc, usage="<question id>",
+                      aliases=["answer"])
     # @commands.has_role("")
     async def waitForReply(self, ctx, *, message):
         guild = ctx.guild.id
@@ -560,7 +583,7 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
-    @commands.command(brief=FAQBrief, description=FAQBrief, name='FAQ')
+    @commands.command(name='FAQ', brief=FAQBrief, description=FAQBrief, aliases=["faq"])
     # @commands.has_role("")
     async def createChannel(self, ctx, *, isBot=True):
         guild = ctx.guild
@@ -593,14 +616,12 @@ class SQLCog(commands.Cog):
         if result != -1:
             if len(result) > 0:
                 for r in result:
-                    ID = r['id']
                     asked_by = int(r["asked_by"])
                     question = r["question"]
 
                     ans_by = int(r["answered_by"])
                     answer = r["answer"]
 
-                    asked_member = await ctx.bot.fetch_user(asked_by)
                     answered_member = await ctx.bot.fetch_user(ans_by)
                     embed = createAnswerEmbed(answered_member, question, answer)
                     if not isBot:
@@ -612,7 +633,7 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Updating FAQ")
 
-    @commands.command(name='DELFAQ')
+    @commands.command(name='DELFAQ', brief=DelFaqBrief, description=DelFaqBrief, aliases=["delfaq", "df"])
     # @commands.has_role("")
     async def delChannel(self, ctx):
         if not ctx.author.bot:
@@ -626,13 +647,14 @@ class SQLCog(commands.Cog):
             await channel.delete()
             await ctx.send("FAQ Channel Deleted")
 
-    @commands.command(name='Refer')
+    @commands.command(name='Refer', brief=ReferBrief, description=ReferDesc, usage="<question id>",
+                      aliases=["refer", "ref"])
     # @commands.has_role("")
     async def referQuestion(self, ctx, *, message):
         guild = ctx.guild.id
         author = ctx.author
         ansID = message
-        roleName = "sudo dev."
+        roleName = "Lecturer"
         if ansID.isdigit():
             ansID = int(ansID)
             isBot = True
@@ -676,7 +698,8 @@ class SQLCog(commands.Cog):
             await ctx.send("Not a Valid Question ID")
 
     @commands.cooldown(1, 2)
-    @commands.command(name='Lecturer')
+    @commands.command(name='Lecturer', brief=LecturerBrief, description=LecturerDesc, usage="<question id>",
+                      aliases=["lecturer", "lect"])
     async def lecturer(self, ctx, *, message):
         ansID = message
         if ansID.isdigit():
@@ -750,9 +773,9 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("Not a Valid Question ID")
 
-    # questionstats command
-    @commands.command(brief="Displays user participation", description=userParticipation, name='QuestionStats',
-                      aliases=["Qstats", "qs"])
+    @commands.command(brief=QStatsBrief,
+                      description=QStatsDesc, name='QuestionStats',
+                      aliases=["QStats", "qs"])
     @commands.cooldown(1, 2)
     async def questionCSV(self, ctx):
         guild_id = str(ctx.guild.id)
@@ -813,7 +836,9 @@ class SQLCog(commands.Cog):
         else:
             ctx.send("An error has occurred")
 
-    @commands.command(name='ReactionStats', brief="send reactions", description="Sends a csv file with reactions data")
+    @commands.command(name='ReactionStats', brief=RStatsBrief,
+                      description=RStatsDesc,
+                      aliases=["RStats", "rs"])
     @commands.cooldown(1, 2)
     async def reactionCSV(self, ctx):
         guild = ctx.guild.id
@@ -855,107 +880,9 @@ class SQLCog(commands.Cog):
         else:
             await ctx.send("An error has occurred")
 
-    # Detects when a reaction ia added to a message
-    @commands.Cog.listener()
-    @commands.cooldown(1, 2)
-    async def on_raw_reaction_add(self, payload):
-
-        Good = ['👍', '💯', '🙌', '👏']
-        Bad = ['👎', '😭', '😕']
-
-        channel = await self.bot.fetch_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        # user = await self.bot.fetch_user(payload.user_id)
-        emoji = str(payload.emoji)
-
-        guild = payload.guild_id
-
-        info = [message.id, message.content, message.author.id]
-        if emoji in Good:
-            info.append(1)
-        else:
-            info.append(0)
-
-        if emoji in Bad:
-            info.append(1)
-        else:
-            info.append(0)
-        if emoji not in Good and emoji not in Bad:
-            info.append(1)
-        else:
-            info.append(0)
-
-        info.append(1)
-
-        member = payload.member
-        isBot = True
-
-        if not member.bot:
-            table = "DiscordReactions"
-            isBot = False
-        else:
-            table = "TestDiscordReactions"
-
-        info.append(guild)
-        code = addReaction(table, info, isBot)
-
-    @commands.Cog.listener()
-    @commands.cooldown(1, 2)
-    async def on_raw_reaction_remove(self, payload):
-        Good = ['👍', '💯', '🙌', '👏']
-        Bad = ['👎', '😭', '😕']
-
-        channel = await self.bot.fetch_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        user = await self.bot.fetch_user(payload.user_id)
-        emoji = str(payload.emoji)
-
-        if emoji in Good:
-            val = (message.id, 0)
-        elif emoji in Bad:
-            val = (message.id, 1)
-        else:
-            val = (message.id, 2)
-
-        isBot = True
-
-        if not user.bot:
-            table = "DiscordReactions"
-            isBot = False
-        else:
-            table = "TestDiscordReactions"
-
-        code = removeReaction(table, val, isBot)
-
-    @commands.Cog.listener("on_message")
-    @commands.cooldown(1, 2)
-    async def on_messageSQL(self, message):
-        if message.author == self.bot.user:
-            return
-        userID = message.author.id
-        username = str(self.bot.get_user(userID))
-        curr_date = datetime.now().strftime('%Y-%m-%d')
-        serverID = message.guild.id
-        if len(message.content) > 20:
-            biggerthan20 = 1
-        else:
-            biggerthan20 = 0
-        val = (userID, username, curr_date, biggerthan20, serverID)
-        isBot = True
-        if not message.author.bot:
-            table = "student_message_log"
-            isBot = False
-        else:
-            table = "teststudent_message_log"
-
-        if isBot and (message.content == "Message added test"):
-            code = AddMessageCount(table, val, isBot)
-            if code == 1:
-                await message.channel.send('Message Added')
-        else:
-            code = AddMessageCount(table, val, isBot)
-
-    @commands.command(name='MessageStats')
+    @commands.command(name='MessageStats', brief=MStatsDesc,
+                      description=MStatsDesc,
+                      aliases=["MStats", "ms"])
     async def messageCSV(self, ctx):
 
         guild = ctx.guild.id
@@ -997,6 +924,105 @@ class SQLCog(commands.Cog):
 
         else:
             await ctx.send("An error has occurred")
+
+    # Detects when a reaction ia added to a message
+    @commands.Cog.listener()
+    @commands.cooldown(1, 2)
+    async def on_raw_reaction_add(self, payload):
+
+        Good = ['👍', '💯', '🙌', '👏']
+        Bad = ['👎', '😭', '😕']
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        emoji = str(payload.emoji)
+
+        guild = payload.guild_id
+
+        info = [message.id, message.content, message.author.id]
+        if emoji in Good:
+            info.append(1)
+        else:
+            info.append(0)
+
+        if emoji in Bad:
+            info.append(1)
+        else:
+            info.append(0)
+        if emoji not in Good and emoji not in Bad:
+            info.append(1)
+        else:
+            info.append(0)
+
+        info.append(1)
+
+        member = payload.member
+        isBot = True
+
+        if not member.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        info.append(guild)
+        addReaction(table, info, isBot)
+
+    @commands.Cog.listener()
+    @commands.cooldown(1, 2)
+    async def on_raw_reaction_remove(self, payload):
+        Good = ['👍', '💯', '🙌', '👏']
+        Bad = ['👎', '😭', '😕']
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        user = await self.bot.fetch_user(payload.user_id)
+        emoji = str(payload.emoji)
+
+        if emoji in Good:
+            val = (message.id, 0)
+        elif emoji in Bad:
+            val = (message.id, 1)
+        else:
+            val = (message.id, 2)
+
+        isBot = True
+
+        if not user.bot:
+            table = "DiscordReactions"
+            isBot = False
+        else:
+            table = "TestDiscordReactions"
+
+        removeReaction(table, val, isBot)
+
+    @commands.Cog.listener("on_message")
+    @commands.cooldown(1, 2)
+    async def on_messageSQL(self, message):
+        if message.author == self.bot.user:
+            return
+        userID = message.author.id
+        username = str(self.bot.get_user(userID))
+        curr_date = datetime.now().strftime('%Y-%m-%d')
+        serverID = message.guild.id
+        if len(message.content) > 20:
+            biggerthan20 = 1
+        else:
+            biggerthan20 = 0
+        val = (userID, username, curr_date, biggerthan20, serverID)
+        isBot = True
+        if not message.author.bot:
+            table = "student_message_log"
+            isBot = False
+        else:
+            table = "teststudent_message_log"
+
+        if isBot and (message.content == "Message added test"):
+            code = AddMessageCount(table, val, isBot)
+            if code == 1:
+                await message.channel.send('Message Added')
+        else:
+            code = AddMessageCount(table, val, isBot)
 
 
 def setup(bot):

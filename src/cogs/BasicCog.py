@@ -1,7 +1,5 @@
 from discord.ext import commands
 import asyncio
-import time
-from discord.utils import get
 
 
 class BasicCog(commands.Cog):

@@ -6,7 +6,7 @@ from pretty_help import PrettyHelp
 import discord
 
 intents = discord.Intents().all()
-bot = commands.Bot(command_prefix='./', intents=intents,help_command=PrettyHelp(sort_commands=True, show_index=False))
+bot = commands.Bot(command_prefix='./', intents=intents, help_command=PrettyHelp(sort_commands=True, show_index=False))
 
 
 # NEED TO RUN IT WITH ARGUMENT -t for testing

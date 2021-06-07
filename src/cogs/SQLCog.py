@@ -465,6 +465,28 @@ def getMessageCSV(table, isBot, guild_ID):
         return -1
 
 
+def getServerID(table,question_ID,isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:  # pragma: no cover
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select channel FROM {table} where id = %s"""
+        cur.execute(Q, (question_ID,))
+        result = cur.fetchone()
+        Db.close()
+        if result:
+            return result["channel"]
+        else:
+            return -1
+    except pymysql.err as err:  # pragma: no cover
+        print(err)
+        Db.close()
+        return -1
+
+
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):
@@ -585,8 +607,12 @@ class SQLCog(commands.Cog):
 
     @commands.command(name='FAQ', brief=FAQBrief, description=FAQBrief, aliases=["faq"])
     # @commands.has_role("")
-    async def createChannel(self, ctx, *, isBot=True):
-        guild = ctx.guild
+    async def createChannel(self, ctx, *, isBot=True, serverID=None):
+        if serverID is not None:
+            serverID = int(serverID)
+            guild = self.bot.get_guild(serverID)
+        else:
+            guild = ctx.guild
         if not ctx.author.bot:
             table = "DiscordAnswers"
             isBot = False
@@ -654,7 +680,7 @@ class SQLCog(commands.Cog):
         guild = ctx.guild.id
         author = ctx.author
         ansID = message
-        roleName = "Lecturer"
+        roleName = "Not Lecturer"
         if ansID.isdigit():
             ansID = int(ansID)
             isBot = True
@@ -770,6 +796,8 @@ class SQLCog(commands.Cog):
                             if rDelCode == 1:
                                 await ctx.send("Question has been Answered")
 
+                                if not isBot:
+                                    await ctx.invoke(self.bot.get_command('FAQ'), isBot=isBot, serverID=channel)
         else:
             await ctx.send("Not a Valid Question ID")
 
@@ -999,7 +1027,7 @@ class SQLCog(commands.Cog):
     @commands.Cog.listener("on_message")
     @commands.cooldown(1, 2)
     async def on_messageSQL(self, message):
-        if message.author == self.bot.user:
+        if message.author == self.bot.user or not message.guild:
             return
         userID = message.author.id
         username = str(self.bot.get_user(userID))

@@ -1,0 +1,62 @@
+Configuration & Setup
+
+
+1. Python3 and Requirements
+a) Ensure that you have Python 3 installed on your system
+    - You use the following link as a guide to install it:
+        -  https://realpython.com/installing-python/
+
+b) Ensure that you have pip3 or equivalent installed on your system.
+    - Note: This should be installed automatically when installing Python3
+
+c) In your terminal run: pip install -r requirements.txt
+    - this installs all required dependencies and libraries to run the bot.
+
+
+
+2. Create Bot from Discord Developers Portal:
+a) Follow the link for a guide on how to create a token for your bot.
+    - https://realpython.com/how-to-make-a-discord-bot-python/
+
+b) Once created click on the newly created bot and on the left under settings click on Bot.
+    - Next to the bot icon copy your Bot Token and keep it safe. (NOTE: DO NOT POST OR SHARE YOUR TOKEN ANYWHERE)
+    - Scroll down and under "Privileged Gateway Intents" switch on "Presence Intent" and "Server Members Intent".
+
+
+
+3. MySQL:
+a) Ensure that you have MySQL server running on your machine if you are planning to run it locally.
+    - You can using the following link to install it.
+        - https://dev.mysql.com/doc/mysql-getting-started/en/
+
+b) The DiscordMySql.sql script has everything that will be needed for the bot to run you can run it in the terminal using:
+    - Linux or Mac:
+        - mysql -u user -p < <path>/DiscordMySql.sql
+
+    - Windows:
+        - https://docs.microsoft.com/en-us/sql/ssms/scripting/sqlcmd-run-transact-sql-script-files?view=sql-server-ver15
+
+    - MySQL WorkBench:
+        - if you have MySQL WorkBench installed you can run the script directly from the application.
+
+    - Alternitively:
+        - Log in to MySQL using "mysql -u user -p"
+        - Copy and Paste command into the terminal
+
+
+
+4. Environmental Variables:
+a) In the src folder create a text document and name it ".env"
+    - Note: This is a hidden file. You will need to show hidden files in your file explorer in order to access it
+
+b) Paste the content of envCopy into .env
+
+c) Replace <YOUR BOT TOKEN> with your Bot Token found in step 1b
+
+d) Replace <DATABASE USERNAME> and <DATABASE PASSWORD> with the appropriate values.
+
+e) If you plan to use MySQL that is not running on the same machine/server (eg. MySQL on a lamp server) as the bot you would need to SSH into the your MySQL database by setting the apporiate values.
+    - Note: using_SSH must be set to True. (False by default)
+    - Note: The database is relative meaning if the bot itself is running on the same server as MySQL, there would be no need to use SSH.
+
+

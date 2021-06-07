@@ -29,7 +29,6 @@ RStatsDesc = "Sends a CSV via DM with the amount of positive or negative reactio
 MStatsBrief = "Generates a CSV file with the amount of messages students have sent in the server"
 MStatsDesc = "Sends a CSV via DM with the amount of messages students have sent in the server. \nThe messages are grouped by length."
 
-
 DelFaqBrief = "Deletes the FAQ Channel if it exists"
 FAQBrief = "Creates a FAQ Channel with all previously answered questions"
 
@@ -40,43 +39,67 @@ LecturerDesc = "Used to answer referred question. \nIt will then send the answer
 ReferBrief = "Usage: Refer <question id>\nUsed by tutors to refer a question they don't know to the lecturer"
 ReferDesc = "Refers a question to a lecturer.\nThe question will then be sent to the lecturer via dm"
 
+isSSH = os.getenv('using_SSH')
+if isSSH.lower() == "true":
+    class DBConnect:  # pragma: no cover
+        def __init__(self):
+            self._username = os.getenv('db_username')
+            self._password = os.getenv('db_password')
+            self._ssh_host = os.getenv('ssh_host')
+            self._database = os.getenv('db_database')
+            self._ssh_username = os.getenv('ssh_username')
+            self._ssh_password = os.getenv('ssh_password')
 
-class DBConnect:  # pragma: no cover
+        def _ConnectServer(self):
+            server = SSHTunnelForwarder(
+                (self._ssh_host, 22),
+                ssh_username=self._ssh_username,
+                ssh_password=self._ssh_password,
+                remote_bind_address=('127.0.0.1', 3306)
+            )
+            return server
 
-    def __init__(self):
-        self._username = os.getenv('db_username')
-        self._password = os.getenv('db_password')
-        self._ssh_host = os.getenv('ssh_host')
-        self._database = os.getenv('database')
+        def open(self):
+            self._Server = self._ConnectServer()
+            self._Server.start()
+            connection = pymysql.connect(
+                host='127.0.0.1',
+                user=self._username,
+                password=self._password,
+                database=self._database,
+                port=self._Server.local_bind_port,
+                cursorclass=pymysql.cursors.DictCursor)
 
-    def _ConnectServer(self):
-        server = SSHTunnelForwarder(
-            (self._ssh_host, 22),
-            ssh_username=self._username,
-            ssh_password=self._password,
-            remote_bind_address=('127.0.0.1', 3306)
-        )
-        return server
+            self.Connection = connection
+            return self.Connection
 
-    def open(self):
-        self._Server = self._ConnectServer()
-        self._Server.start()
-        connection = pymysql.connect(
-            host='127.0.0.1',
-            user=self._username,
-            password=self._password,
-            database=self._database,
-            port=self._Server.local_bind_port,
-            cursorclass=pymysql.cursors.DictCursor)
+        def close(self):
+            self.Connection.close()
+            self._Server.stop()
+else:
+    class DBConnect:
+        def __init__(self):
+            self._username = os.getenv('db_username')
+            self._password = os.getenv('db_password')
+            self._database = os.getenv('db_database')
 
-        self.Connection = connection
-        return self.Connection
+        def open(self):
+            connection = pymysql.connect(
+                host='127.0.0.1',
+                user=self._username,
+                password=self._password,
+                database=self._database,
+                port=3306,
+                cursorclass=pymysql.cursors.DictCursor)
 
-    def close(self):
-        self.Connection.close()
-        self._Server.stop()
+            self.Connection = connection
+            return self.Connection
+
+        def close(self):
+            self.Connection.close()
 
 
+# USED FOR TESTING DO NOT CHANGE.
 class TravisDBConnect:
     def __init__(self):
         self._username = "root"

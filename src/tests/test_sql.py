@@ -7,7 +7,6 @@ from discord import Embed
 import asyncio
 
 
-
 class TravisDBConnect:
 
     def __init__(self):
@@ -103,8 +102,8 @@ async def test_messageStats(interface):
         await interface.get_delayed_reply(2, interface.assert_message_equals, "Message Stats file sent.")
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'Fail')
-        
-        
+
+
 @test_collector()
 async def test_reactionStats(interface):
     await interface.send_message("./ReactionStats")

@@ -465,28 +465,6 @@ def getMessageCSV(table, isBot, guild_ID):
         return -1
 
 
-def getServerID(table,question_ID,isBot):
-    if isBot:
-        Db = TravisDBConnect()
-    else:  # pragma: no cover
-        Db = DBConnect()
-    try:
-        conn = Db.open()
-        cur = conn.cursor()
-        Q = f"""Select channel FROM {table} where id = %s"""
-        cur.execute(Q, (question_ID,))
-        result = cur.fetchone()
-        Db.close()
-        if result:
-            return result["channel"]
-        else:
-            return -1
-    except pymysql.err as err:  # pragma: no cover
-        print(err)
-        Db.close()
-        return -1
-
-
 class SQLCog(commands.Cog):
 
     def __init__(self, bot):

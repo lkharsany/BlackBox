@@ -1,0 +1,26 @@
+Sprint Planning Meeting:
+
+The team has decided on which product backlog items will be converted into working products during the sprint. They are as follows:
+-Refer question to lecturer, dm lecturer and then when the lecturer answers ,dm tutor and student.
+-Keep track of stats for students.
+-Keep track of reactions
+
+These items were then split into individual tasks and divided amongst the development team.
+They are split as follows.
+
+Nabeel Uppel and Lindani Dlamini:
+- Assigned task of referring questions to the lecturer.
+
+Ahmed Kharsany and Matthew Simon:
+-Assigned task of keeping track of stats for student's messages.
+
+Zaneli Steenveldt and Khorommbi Ganyane:
+-Diagrams.
+
+Amen Moipushi:
+-Daily Sprints
+
+Neeloufah Alli:
+-Assigned task of keeping track of reactions
+
+The group has agreed to describe what they are doing each day in the WhatsApp groupchat to make sure all the requirements are met in time.

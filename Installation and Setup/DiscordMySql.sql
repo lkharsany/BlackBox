@@ -1,9 +1,9 @@
-# Create DB
-CREATE DATABASE IF NOT EXISTS `testDB` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-USE `testDB`;
+ # Create DB
+CREATE DATABASE IF NOT EXISTS `DiscordDB` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `DiscordDB`;
 
 # Create Table
-CREATE TABLE IF NOT EXISTS TestDiscordQuestions
+CREATE TABLE IF NOT EXISTS DiscordQuestions
 (
     `id` int(6) unsigned auto_increment primary key,
     `username` varchar(30)  not null,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS TestDiscordQuestions
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE IF NOT EXISTS TestDiscordAnswers
+CREATE TABLE IF NOT EXISTS DiscordAnswers
 (
     `id` int(6) unsigned auto_increment primary key,
     `asked_by` varchar(30)  not null,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS TestDiscordAnswers
     `channel` varchar(30) not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS TestDiscordReactions
+CREATE TABLE IF NOT EXISTS DiscordReactions
 (
     `id` int(6) unsigned auto_increment primary key,
     `message_id` varchar(30)  not null,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS TestDiscordReactions
 
 
 
-CREATE TABLE IF NOT EXISTS TestLecturerQuestions
+CREATE TABLE IF NOT EXISTS LecturerQuestions
 (
     `id` int(6) unsigned auto_increment primary key,
     `asked_by` varchar(30)  not null,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS TestLecturerQuestions
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE IF NOT EXISTS teststudent_message_log
+CREATE TABLE IF NOT EXISTS student_message_log
 (
 `id` int(6) auto_increment primary key,
 `discord_id` varchar(50),

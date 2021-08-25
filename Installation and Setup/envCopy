@@ -1,0 +1,23 @@
+# Environmental Variables
+
+# No Qutation Marks should surround the values.
+
+TOKEN = <YOUR BOT TOKEN>
+
+
+db_username = <DATABASE USERNAME>
+db_password = <DATABASE PASSWORD>
+
+db_database = DiscordDB
+
+
+# If you are using MySql that's not on a local machine. Example using a Lamp Server (Set using_SSH to True)
+
+using_SSH = False
+ssh_host = <SSH Hostname>
+ssh_username = <SSH Username>
+ssh_password = <SSH Password>
+
+
+
+

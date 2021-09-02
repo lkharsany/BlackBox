@@ -216,7 +216,8 @@ class MoodleCog(commands.Cog):
     #Runs the following code everyday
     #Deletes all items whose due dates have passed from the database
     #sends reminders in the form of a message for items which are due within 3 days of the current date
-    @tasks.loop(hours=24)
+    #@tasks.loop(hours=24)
+    @tasks.loop(minutes=1)
     async def checkDates(self):
         channel_name = "reminders"
         CleanUp("DueDates", isBot=False)

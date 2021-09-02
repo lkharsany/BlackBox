@@ -120,7 +120,7 @@ def QueryDatesCommand(table, Server_id, days,isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""Select * FROM {table} WHERE server_id =%s AND due_date <= DATE_ADD(CURDATE(), INTERVAL {days} DAY);"""
+        Q = f"""Select * FROM {table} WHERE server_id =%s AND due_date <= DATE_ADD(CURDATE(), INTERVAL {days} DAY) ORDER BY due_date DESC;"""
         cur.execute(Q, (Server_id,))
         result = cur.fetchall()
         Db.close()
@@ -142,7 +142,7 @@ def QueryDates(table, isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""Select * FROM {table} WHERE  due_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY);"""
+        Q = f"""Select * FROM {table} ORDER BY due_date DESC """
         cur.execute(Q, )
         result = cur.fetchall()
         Db.close()
@@ -185,7 +185,6 @@ def CleanUp(table, isBot):
         conn = Db.open()
         cur = conn.cursor()
         Q = f"""Delete from {table} WHERE due_date<NOW()"""
-        # Q = f"""Select id FROM {table} WHERE server_id =%s AND due_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY);"""
         cur.execute(Q, )
         conn.commit()
         Db.close()

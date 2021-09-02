@@ -236,13 +236,14 @@ class MoodleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        channel_name = "reminders"
-        for guild in self.bot.guilds:
-            channel = get(guild.text_channels, name=channel_name)
-            if channel is None:
-                await guild.create_text_channel(channel_name)
-
-        self.checkDates.start()
+        is_travis = 'TRAVIS' in os.environ
+        if not is_travis:
+            channel_name = "reminders"
+            for guild in self.bot.guilds:
+                channel = get(guild.text_channels, name=channel_name)
+                if channel is None:
+                    await guild.create_text_channel(channel_name)
+            self.checkDates.start()
 
     #Displays all upcoming assignments due within the given time period the user specifies
     @commands.command(name='Upcoming', brief="", description="See What's Due")

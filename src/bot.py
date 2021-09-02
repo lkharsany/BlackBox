@@ -20,5 +20,5 @@ TOKEN = os.getenv('TOKEN')
 
 bot.load_extension("cogs.SQLCog")
 bot.load_extension("cogs.BasicCog")
-
+bot.load_extension("cogs.MoodleCog")
 bot.run(TOKEN)

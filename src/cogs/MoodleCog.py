@@ -1,14 +1,14 @@
-import os
+import asyncio
+
+from discord.ext import commands, tasks
 from datetime import datetime
 import pymysql.cursors
-import discord
-from discord.ext import commands
-from discord.utils import get, find
+import os
 from sshtunnel import SSHTunnelForwarder
-import pandas as pd
+from dateutil.parser import parse
 
 isSSH = os.getenv('using_SSH')
-if isSSH.lower() == "true": # pragma: no cover
+if isSSH.lower() == "true":  # pragma: no cover
     class DBConnect:  # pragma: no cover
         def __init__(self):
             self._username = os.getenv('db_username')
@@ -44,8 +44,8 @@ if isSSH.lower() == "true": # pragma: no cover
         def close(self):
             self.Connection.close()
             self._Server.stop()
-else: # pragma: no cover
-    class DBConnect: # pragma: no cover
+else:  # pragma: no cover
+    class DBConnect:  # pragma: no cover
         def __init__(self):
             self._username = os.getenv('db_username')
             self._password = os.getenv('db_password')
@@ -64,7 +64,7 @@ else: # pragma: no cover
             return self.Connection
 
         def close(self):
-            self.Connection.close() # pragma: no cover
+            self.Connection.close()  # pragma: no cover
 
 
 # USED FOR TESTING DO NOT CHANGE.
@@ -90,14 +90,48 @@ class TravisDBConnect:
         self.Connection.close()
 
 
-class ThreadCog(commands.Cog):
+class MoodleCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.description = "Commands to Add, Display and Remove Questions from a Database"
+        self.description = "Moodle Integration Commands"
 
-    # Ask command
-    @commands.command(name='Thread', usage="<question>", aliases=["thread"])
-    @commands.cooldown(1, 2)
-    async def Thread(self, ctx, *, message):
+    @tasks.loop(seconds=10)
+    async def checkDates(self):
         pass
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.checkDates()
+
+    @commands.command(name='Due', brief="", description="Add an item that's due")
+    @commands.cooldown(1, 2)
+    async def add_due(self, ctx, *, message):
+        item = message
+        created_by = ctx.author
+        server_id = ctx.guild.id
+        await ctx.send("When is it due? (DD/MM/YYYY HH:MM:SS) \n NB: Time is optional")
+
+        def check(m):
+            if m.author == ctx.author:
+                try:
+                    x = parse(m.content)
+                    return isinstance(x, datetime) and x > datetime.now()
+                except ValueError:
+                    return False
+                # send error message if not in correct format
+
+        try:
+            msg = await self.bot.wait_for("message", check=check, timeout=20)
+            if message is not None:
+                due_date = parse(msg.content)
+                # add to database here
+                #insert(server_id, due_date, item, created_by_by,)
+
+        except asyncio.TimeoutError:
+            await ctx.send("Item not added. Please ensure you use the correct format and try again")
+
+
+
+def setup(bot):
+    bot.add_cog(MoodleCog(bot))

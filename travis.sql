@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS teststudent_message_log
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE IF NOT EXISTS DueDates
+CREATE TABLE IF NOT EXISTS TestDueDates
 (
 `id` int(6) auto_increment primary key,
 `server_id` varchar(50),

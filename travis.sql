@@ -41,9 +41,7 @@ CREATE TABLE IF NOT EXISTS TestDiscordReactions
 
     `bad_reaction` int(5)   not null,
     `other_reaction` int(5)  not null,
-    `total_reaction` int(5) not null,
-
-    `guild` varchar(30)  not null
+    `total_reaction` int(5) not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -60,26 +58,4 @@ CREATE TABLE IF NOT EXISTS TestLecturerQuestions
     `channel` varchar(30) not null
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-CREATE TABLE IF NOT EXISTS teststudent_message_log
-(
-`id` int(6) auto_increment primary key,
-`discord_id` varchar(50),
-`discord_username` varchar(50),
-`record_count` int,
-`last_message_date` date,
-`record_count_20` int,
-`server_id` varchar(50)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-CREATE TABLE IF NOT EXISTS TestDueDates
-(
-`id` int(6) auto_increment primary key,
-`server_id` varchar(50),
-`due_date` datetime,
-`item_due` varchar(30),
-`created_by` varchar(30)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

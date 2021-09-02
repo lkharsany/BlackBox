@@ -1,6 +1,6 @@
 from discord.ext import commands
 import asyncio
-
+import time
 
 class BasicCog(commands.Cog):
 
@@ -46,10 +46,7 @@ class BasicCog(commands.Cog):
             await self.bot.process_commands(message)
 
         if message.content == "ReactionsTestMessage":
-            await message.add_reaction(emoji=u"\U0001F44D")
-            await asyncio.sleep(3)
-            await message.remove_reaction(member=self.bot.user, emoji=u"\U0001F44D")
-
+            await self.bot.reaction(message, "👍")
             await self.bot.process_commands(message)
 
         if message.attachments:

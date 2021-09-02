@@ -91,7 +91,7 @@ class TravisDBConnect:
     def close(self):
         self.Connection.close()
 
-
+#adds the reminder data to the DueDates table
 def AddReminder(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -111,7 +111,7 @@ def AddReminder(table, val, isBot):
         Db.close()
         return -1
 
-
+#Returns all items whose due dates are within the users given interval period from the current date
 def QueryDatesCommand(table, Server_id, days,isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -133,6 +133,7 @@ def QueryDatesCommand(table, Server_id, days,isBot):
         Db.close()
         return -1
 
+#Returns all the items in the database whose due dates are 3 days away from the current date
 def QueryDates(table, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -154,7 +155,7 @@ def QueryDates(table, isBot):
         Db.close()
         return -1
 
-
+#Creates an embed to display the reminders
 def createDueEmbed(item, date, member):
     remaining = (date - datetime.now())
     embed = discord.Embed(color=0xff9999, title=item + " Due", description="")
@@ -174,7 +175,7 @@ def createDueEmbed(item, date, member):
     embed.set_footer(text=f"Created By:  {member.name}")
     return embed
 
-
+#Deletes items from DueDates table
 def CleanUp(table, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -202,6 +203,8 @@ class MoodleCog(commands.Cog):
         self.bot = bot
         self.description = "Moodle Integration Commands"
 
+
+    #clears the reminders channel of previous reminders so only most recent items due are visible
     async def CleanChannel(self):
         channel_name = "reminders"
         for guild in self.bot.guilds:
@@ -211,7 +214,10 @@ class MoodleCog(commands.Cog):
                 for msg in oldMessages:
                     await msg.delete()
 
-    @tasks.loop(seconds=30)
+    #Runs the following code everyday
+    #Deletes all items whose due dates have passed from the database
+    #sends reminders in the form of a message for items which are due within 3 days of the current date
+    @tasks.loop(hours=24)
     async def checkDates(self):
         channel_name = "reminders"
         CleanUp("DueDates", isBot=False)
@@ -238,6 +244,7 @@ class MoodleCog(commands.Cog):
 
         self.checkDates.start()
 
+    #Displays all upcoming assignments due within the given time period the user specifies
     @commands.command(name='Upcoming', brief="", description="See What's Due")
     @commands.cooldown(1, 2)
     async def Upcoming(self, ctx,  amount=3):
@@ -249,6 +256,7 @@ class MoodleCog(commands.Cog):
             embed = createDueEmbed(item, date, member)
             await ctx.send(embed=embed)
 
+    #Command for the user to set a reminder for when something is due and adds said reminder to the DueDates table
     @commands.command(name='Due', brief="", description="Add an item that's due")
     @commands.cooldown(1, 2)
     async def add_due(self, ctx, *, message):
@@ -257,6 +265,7 @@ class MoodleCog(commands.Cog):
         server_id = ctx.guild.id
         await ctx.send("When is it due? (DD/MM/YYYY HH:MM:SS) \n NB: Time is optional")
 
+        #Checks if the date provided by the user is in the correct format
         def check(m):
             if m.author == ctx.author:
                 try:

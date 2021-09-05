@@ -60,7 +60,7 @@ created_channel = None
 @test_collector()
 async def test_due(interface):
     Username = 829768047350251530
-    await interface.send_message("./Due lab 5")
+    await interface.send_message("./Due testlab")
     await asyncio.sleep(1)
 
     y = await interface.get_delayed_reply(2, interface.assert_message_equals,
@@ -77,8 +77,15 @@ async def test_due(interface):
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'An error occurred, please try again')
 
 
-
-
+@test_collector()
+async def test_upcoming(interface):
+    message = await interface.send_message("Testing Upcoming")
+    item = "testlab"
+    member = message.author
+    attributeList = ["author", "description"]
+    embed = Embed(color=0xff9999, title="", description=item.capitalize() + " Due")
+    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
+    await interface.assert_reply_embed_equals("./Upcoming 5", embed, attributeList)
 
 
 # Actually run the bot

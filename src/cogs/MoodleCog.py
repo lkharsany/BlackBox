@@ -160,24 +160,28 @@ def QueryDates(table, isBot): # pragma: no cover
 
 
 # Creates an embed to display the reminders
-def createDueEmbed(item, date, member):
+def createDueEmbed(item, date, member, isBot):
     remaining = (date - datetime.now())
-    embed = discord.Embed(color=0xff9999, title=item.capitalize() + " Due", description="")
-    embed.add_field(name="Date", value=date.date().strftime("%d/%m/%Y"), inline=False)
-    embed.add_field(name="Item", value=item, inline=False)
-    if date.hour != 0:
-        embed.add_field(name="Time", value=date.time(), inline=False)
-    m, s = divmod(remaining.seconds, 60)
-    h, m = divmod(m, 60)
-    d = remaining.days
+    if not isBot:  # pragma: no cover
+        embed = discord.Embed(color=0xff9999, title=item.capitalize() + " Due", description="")
+        embed.add_field(name="Date", value=date.date().strftime("%d/%m/%Y"), inline=False)
+        embed.add_field(name="Item", value=item, inline=False)
+        if date.hour != 0:
+            embed.add_field(name="Time", value=date.time(), inline=False)
+        m, s = divmod(remaining.seconds, 60)
+        h, m = divmod(m, 60)
+        d = remaining.days
 
-    days = "day" if d == 1 else "days"
-    hours = "hour" if h == 1 else "hours"
-    minutes = "minute" if m == 1 else "minutes"
+        days = "day" if d == 1 else "days"
+        hours = "hour" if h == 1 else "hours"
+        minutes = "minute" if m == 1 else "minutes"
 
-    timeLeft = f"{d} {days}, {h} {hours}, {m} {minutes}"
-    embed.add_field(name='Time Left', value=timeLeft)
-    embed.set_footer(text=f"Created By:  {member.name}")
+        timeLeft = f"{d} {days}, {h} {hours}, {m} {minutes}"
+        embed.add_field(name='Time Left', value=timeLeft)
+        embed.set_footer(text=f"Created By:  {member.name}")
+    else:
+        embed = discord.Embed(color=0xff9999, title="", description=item.capitalize() + " Due")
+        embed.set_author(name=member.name, url=discord.Embed.Empty, icon_url=member.avatar_url)
     return embed
 
 

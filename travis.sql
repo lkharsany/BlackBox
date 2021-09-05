@@ -73,3 +73,11 @@ CREATE TABLE IF NOT EXISTS teststudent_message_log
 `server_id` varchar(50)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS DueDates
+(
+`id` int(6) auto_increment primary key,
+`server_id` varchar(50),
+`due_date` datetime,
+`item_due` varchar(30),
+`created_by` varchar(30)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;

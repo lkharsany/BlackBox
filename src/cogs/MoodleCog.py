@@ -120,7 +120,7 @@ def QueryDatesCommand(table, Server_id, days,isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""Select * FROM {table} WHERE server_id =%s AND due_date <= DATE_ADD(CURDATE(), INTERVAL {days} DAY);"""
+        Q = f"""Select * FROM {table} WHERE server_id =%s AND due_date <= DATE_ADD(CURDATE(), INTERVAL {days} DAY) ORDER BY due_date DESC;"""
         cur.execute(Q, (Server_id,))
         result = cur.fetchall()
         Db.close()
@@ -142,7 +142,7 @@ def QueryDates(table, isBot):
     try:
         conn = Db.open()
         cur = conn.cursor()
-        Q = f"""Select * FROM {table} WHERE  due_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY);"""
+        Q = f"""Select * FROM {table} ORDER BY due_date DESC """
         cur.execute(Q, )
         result = cur.fetchall()
         Db.close()
@@ -185,7 +185,6 @@ def CleanUp(table, isBot):
         conn = Db.open()
         cur = conn.cursor()
         Q = f"""Delete from {table} WHERE due_date<NOW()"""
-        # Q = f"""Select id FROM {table} WHERE server_id =%s AND due_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY);"""
         cur.execute(Q, )
         conn.commit()
         Db.close()
@@ -217,7 +216,8 @@ class MoodleCog(commands.Cog):
     #Runs the following code everyday
     #Deletes all items whose due dates have passed from the database
     #sends reminders in the form of a message for items which are due within 3 days of the current date
-    @tasks.loop(hours=24)
+    #@tasks.loop(hours=24)
+    @tasks.loop(minutes=1)
     async def checkDates(self):
         channel_name = "reminders"
         CleanUp("DueDates", isBot=False)
@@ -236,13 +236,14 @@ class MoodleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        channel_name = "reminders"
-        for guild in self.bot.guilds:
-            channel = get(guild.text_channels, name=channel_name)
-            if channel is None:
-                await guild.create_text_channel(channel_name)
-
-        self.checkDates.start()
+        is_travis = 'TRAVIS' in os.environ
+        if not is_travis:
+            channel_name = "reminders"
+            for guild in self.bot.guilds:
+                channel = get(guild.text_channels, name=channel_name)
+                if channel is None:
+                    await guild.create_text_channel(channel_name)
+            self.checkDates.start()
 
     #Displays all upcoming assignments due within the given time period the user specifies
     @commands.command(name='Upcoming', brief="", description="See What's Due")

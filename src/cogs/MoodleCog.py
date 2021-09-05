@@ -378,8 +378,9 @@ class MoodleCog(commands.Cog):
 
         row = GetDueDateRow(table, val, isBot)
         if row != -1:
-            member = await ctx.bot.fetch_user(row['created_by'])
-            await ctx.send(embed=createDueEmbed(row["item_due"], row["due_date"], member, isBot))
+            if not isBot:
+                member = await ctx.bot.fetch_user(row['created_by'])
+                await ctx.send(embed=createDueEmbed(row["item_due"], row["due_date"], member, isBot))
             await ctx.send("Whats the new due date? (DD/MM/YYYY HH:MM:SS) \nNB: Time is optional")
 
             def check(m):

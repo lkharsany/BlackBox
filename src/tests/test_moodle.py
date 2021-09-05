@@ -70,7 +70,6 @@ async def test_due(interface):
         message = await interface.send_message(date)
 
     row = getRow(Username)
-    print(row)
     if row != -99:
         await interface.get_delayed_reply(2, interface.assert_message_equals, 'Due date has been added')
     else:
@@ -86,6 +85,21 @@ async def test_upcoming(interface):
     embed = Embed(color=0xff9999, title="", description=item.capitalize() + " Due")
     embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
     await interface.assert_reply_embed_equals("./Upcoming 5", embed, attributeList)
+
+@test_collector()
+async def test_update(interface):
+    Username = 829768047350251530
+    message = await interface.send_message("./update testlab")
+    y = await interface.get_delayed_reply(2, interface.assert_message_equals,
+                                          "Whats the new due date? (DD/MM/YYYY HH:MM:SS) \nNB: Time is optional")
+    if y:
+        date = (datetime.today()+timedelta(days=5)).strftime("%d/%m/%y")
+        message = await interface.send_message(date)
+    row = getRow(Username)
+    if row != -99:
+        await interface.get_delayed_reply(2, interface.assert_message_equals, "Due date has been updated")
+    else:
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'An error occurred, please try again')
 
 
 # Actually run the bot

@@ -27,7 +27,8 @@ RStatsBrief = "Generates a CSV file with the amount of reactions messages have i
 RStatsDesc = "Sends a CSV via DM with the amount of positive or negative reactions messages have if any."
 
 MStatsBrief = "Generates a CSV file with the amount of messages students have sent in the server"
-MStatsDesc = "Sends a CSV via DM with the amount of messages students have sent in the server. \nThe messages are grouped by length."
+MStatsDesc = "Sends a CSV via DM with the amount of messages students have sent in the server. \nThe messages are " \
+             "grouped by length. "
 
 DelFaqBrief = "Deletes the FAQ Channel if it exists"
 FAQBrief = "Creates a FAQ Channel with all previously answered questions"

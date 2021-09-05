@@ -283,7 +283,7 @@ class MoodleCog(commands.Cog):
             member = await self.bot.fetch_user(i['created_by'])
             guild = self.bot.get_guild(server_id)
             channel = get(guild.text_channels, name=channel_name)
-            embed = createDueEmbed(item, date, member)
+            embed = createDueEmbed(item, date, member, isBot=False)
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -315,7 +315,7 @@ class MoodleCog(commands.Cog):
                 item = i['item_due']
                 date = i["due_date"]
                 member = await ctx.bot.fetch_user(i['created_by'])
-                embed = createDueEmbed(item, date, member)
+                embed = createDueEmbed(item, date, member, isBot)
                 await ctx.send(embed=embed)
         else:
             await ctx.send(f"Nothing Due Within {amount} Days")
@@ -379,7 +379,7 @@ class MoodleCog(commands.Cog):
         row = GetDueDateRow(table, val, isBot)
         if row != -1:
             member = await ctx.bot.fetch_user(row['created_by'])
-            await ctx.send(embed=createDueEmbed(row["item_due"], row["due_date"], member))
+            await ctx.send(embed=createDueEmbed(row["item_due"], row["due_date"], member, isBot))
             await ctx.send("Whats the new due date? (DD/MM/YYYY HH:MM:SS) \nNB: Time is optional")
 
             def check(m):

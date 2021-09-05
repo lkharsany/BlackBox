@@ -224,7 +224,6 @@ class MoodleCog(commands.Cog):
         allDates = QueryDates("DueDates", isBot=False)
         await self.CleanChannel()
         for i in allDates:
-            print(i)
             item = i['item_due']
             date = i["due_date"]
             server_id = int(i["server_id"])

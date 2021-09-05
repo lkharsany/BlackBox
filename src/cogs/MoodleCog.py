@@ -7,7 +7,7 @@ import pymysql.cursors
 import os
 from sshtunnel import SSHTunnelForwarder
 from dateutil.parser import parse
-from discord.utils import get, find
+from discord.utils import get
 
 isSSH = os.getenv('using_SSH')
 if isSSH.lower() == "true":  # pragma: no cover
@@ -91,7 +91,8 @@ class TravisDBConnect:
     def close(self):
         self.Connection.close()
 
-#adds the reminder data to the DueDates table
+
+# adds the reminder data to the DueDates table
 def AddReminder(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -111,8 +112,9 @@ def AddReminder(table, val, isBot):
         Db.close()
         return -1
 
-#Returns all items whose due dates are within the users given interval period from the current date
-def QueryDatesCommand(table, Server_id, days,isBot):
+
+# Returns all items whose due dates are within the users given interval period from the current date
+def QueryDatesCommand(table, Server_id, days, isBot):
     if isBot:
         Db = TravisDBConnect()
     else:  # pragma: no cover
@@ -133,8 +135,9 @@ def QueryDatesCommand(table, Server_id, days,isBot):
         Db.close()
         return -1
 
-#Returns all the items in the database whose due dates are 3 days away from the current date
-def QueryDates(table, isBot):
+
+# Returns all the items in the database whose due dates are 3 days away from the current date
+def QueryDates(table, isBot): # pragma: no cover
     if isBot:
         Db = TravisDBConnect()
     else:  # pragma: no cover
@@ -155,11 +158,13 @@ def QueryDates(table, isBot):
         Db.close()
         return -1
 
-#Creates an embed to display the reminders
+
+# Creates an embed to display the reminders
 def createDueEmbed(item, date, member):
     remaining = (date - datetime.now())
-    embed = discord.Embed(color=0xff9999, title=item + " Due", description="")
+    embed = discord.Embed(color=0xff9999, title=item.capitalize() + " Due", description="")
     embed.add_field(name="Date", value=date.date().strftime("%d/%m/%Y"), inline=False)
+    embed.add_field(name="Item", value=item, inline=False)
     if date.hour != 0:
         embed.add_field(name="Time", value=date.time(), inline=False)
     m, s = divmod(remaining.seconds, 60)
@@ -175,7 +180,8 @@ def createDueEmbed(item, date, member):
     embed.set_footer(text=f"Created By:  {member.name}")
     return embed
 
-#Deletes items from DueDates table
+
+# Deletes items from DueDates table
 def CleanUp(table, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -196,15 +202,56 @@ def CleanUp(table, isBot):
         return -1
 
 
+def GetDueDateRow(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:  # pragma: no cover
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table} WHERE server_id =%s AND item_due=%s;"""
+        cur.execute(Q, val)
+        result = cur.fetchone()
+        Db.close()
+        if result:
+            return result
+        else:
+            return -1
+    except Exception as e:  # pragma: no cover
+        print(e)
+        Db.close()
+        return -1
+
+
+def UpdateDueDate(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""UPDATE {table} SET due_date = %s WHERE id=%s"""
+        cur.execute(Q, val)
+        conn.commit()
+        Db.close()
+        return 1
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
 class MoodleCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
         self.description = "Moodle Integration Commands"
 
-
-    #clears the reminders channel of previous reminders so only most recent items due are visible
-    async def CleanChannel(self):
+    # clears the reminders channel of previous reminders so only most recent items due are visible
+    async def CleanChannel(self): # pragma: no cover
         channel_name = "reminders"
         for guild in self.bot.guilds:
             channel = get(guild.text_channels, name=channel_name)
@@ -213,15 +260,17 @@ class MoodleCog(commands.Cog):
                 for msg in oldMessages:
                     await msg.delete()
 
-    #Runs the following code everyday
-    #Deletes all items whose due dates have passed from the database
-    #sends reminders in the form of a message for items which are due within 3 days of the current date
-    #@tasks.loop(hours=24)
+    # Runs the following code everyday
+    # Deletes all items whose due dates have passed from the database
+    # sends reminders in the form of a message for items which are due within 3 days of the current date
+    # @tasks.loop(hours=24)
     @tasks.loop(minutes=1)
-    async def checkDates(self):
+    async def checkDates(self): # pragma: no cover
         channel_name = "reminders"
-        CleanUp("DueDates", isBot=False)
-        allDates = QueryDates("DueDates", isBot=False)
+        table = "DueDates"
+
+        CleanUp(table, isBot=False)
+        allDates = QueryDates(table, isBot=False)
         await self.CleanChannel()
         for i in allDates:
             item = i['item_due']
@@ -234,7 +283,7 @@ class MoodleCog(commands.Cog):
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self): # pragma: no cover
         is_travis = 'TRAVIS' in os.environ
         if not is_travis:
             channel_name = "reminders"
@@ -244,19 +293,30 @@ class MoodleCog(commands.Cog):
                     await guild.create_text_channel(channel_name)
             self.checkDates.start()
 
-    #Displays all upcoming assignments due within the given time period the user specifies
-    @commands.command(name='Upcoming', brief="", description="See What's Due")
+    # Displays all upcoming assignments due within the given time period the user specifies
+    @commands.command(name='Upcoming', brief="", description="See What's Due", aliases=["upcoming", "upc"])
     @commands.cooldown(1, 2)
-    async def Upcoming(self, ctx,  amount=3):
-        Upcoming = QueryDatesCommand("DueDates", ctx.guild.id, amount,isBot=False)
-        for i in Upcoming:
-            item = i['item_due']
-            date = i["due_date"]
-            member = await ctx.bot.fetch_user(i['created_by'])
-            embed = createDueEmbed(item, date, member)
-            await ctx.send(embed=embed)
+    async def Upcoming(self, ctx, amount=3):
 
-    #Command for the user to set a reminder for when something is due and adds said reminder to the DueDates table
+        isBot = True
+        if not ctx.author.bot:
+            table = "DueDates"
+            isBot = False
+        else:
+            table = "TestDueDates"
+
+        Upcoming = QueryDatesCommand(table, ctx.guild.id, amount, isBot)
+        if Upcoming != -1:
+            for i in Upcoming:
+                item = i['item_due']
+                date = i["due_date"]
+                member = await ctx.bot.fetch_user(i['created_by'])
+                embed = createDueEmbed(item, date, member)
+                await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"Nothing Due Within {amount} Days")
+
+    # Command for the user to set a reminder for when something is due and adds said reminder to the DueDates table
     @commands.command(name='Due', brief="", description="Add an item that's due")
     @commands.cooldown(1, 2)
     async def add_due(self, ctx, *, message):
@@ -265,7 +325,7 @@ class MoodleCog(commands.Cog):
         server_id = ctx.guild.id
         await ctx.send("When is it due? (DD/MM/YYYY HH:MM:SS) \n NB: Time is optional")
 
-        #Checks if the date provided by the user is in the correct format
+        # Checks if the date provided by the user is in the correct format
         def check(m):
             if m.author == ctx.author:
                 try:
@@ -297,6 +357,62 @@ class MoodleCog(commands.Cog):
 
         except asyncio.TimeoutError:
             await ctx.send("Item not added. Please ensure you use the correct format and try again")
+
+    @commands.command(name='Update', brief="", description="Update due dates", aliases=["update"])
+    @commands.cooldown(1, 2)
+    async def Update(self, ctx, *, message):
+        item = message
+        isBot = True
+
+        if not ctx.author.bot:
+            table = "DueDates"
+            isBot = False
+        else:
+            table = "TestDueDates"
+        server_id = ctx.guild.id
+        val = (server_id, item)
+
+        row = GetDueDateRow(table, val, isBot)
+        if row != -1:
+            member = await ctx.bot.fetch_user(row['created_by'])
+            await ctx.send(embed=createDueEmbed(row["item_due"], row["due_date"], member))
+            await ctx.send("Whats the new due date? (DD/MM/YYYY HH:MM:SS) \nNB: Time is optional")
+
+            def check(m):
+                if m.author == ctx.author:
+                    try:
+                        x = parse(m.content, dayfirst=True)
+                        return isinstance(x, datetime) and x >= datetime.now()
+                    except ValueError:
+                        return False
+                    # send error message if not in correct format
+
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=20)
+                id_num = row["id"]
+                if message is not None:
+                    due_date = parse(msg.content, dayfirst=True).strftime("%Y-%m-%d %H:%M:%S")
+                    val = (due_date, id_num)
+
+                    isBot = True
+
+                    if not ctx.author.bot:
+                        table = "DueDates"
+                        isBot = False
+                    else:
+                        table = "TestDueDates"
+
+                    code = UpdateDueDate(table, val, isBot)
+                    if code == 1:
+                        await ctx.send("Due date has been updated")
+                    else:
+                        await ctx.send("An error occurred, please try again")
+
+            except asyncio.TimeoutError:
+                await ctx.send("Item not updated. Please ensure you use the correct format and try again")
+
+        else:
+            await ctx.send("No Such Item Exists")
 
 
 def setup(bot):

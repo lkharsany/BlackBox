@@ -3,4 +3,5 @@ include  =
     ./src/bot.py
     ./src/cogs/BasicCog.py
     ./src/cogs/SQLCog.py
+    ./src/cogs/MoodleCog.py
 

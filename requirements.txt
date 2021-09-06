@@ -11,4 +11,4 @@ discord-pretty-help
 pandas
 
 
-python-dateutils~=2.8.1
+python-dateutil~=2.8.1

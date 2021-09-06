@@ -1,0 +1,19 @@
+Sprint 1 Semester 2 Meeting with Pravesh
+Meeting Minutes
+
+Meeting took place on 13th August on Discord.
+ 
+•	Features to be implemented: 
+
+1. 	Question Threads
+	-bot able to create question threads.
+
+2.	Keep track of stats of question threads.
+	-be able to trach who reacts to a question
+	-be able to track who reacts to an answer
+
+3.	Impliment a point awarding system for question threads
+	-award points to those who ask and answer quations based on how helpful the answer of quation is
+
+4.	Due date reminder
+	-a reminder channel where due dates are automatically sent by the bot

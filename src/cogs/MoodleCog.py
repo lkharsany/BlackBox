@@ -362,6 +362,8 @@ class MoodleCog(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.send("Item not added. Please ensure you use the correct format and try again")
 
+
+##Update command to change due dates
     @commands.command(name='Update', brief="", description="Update due dates", aliases=["update"])
     @commands.cooldown(1, 2)
     async def Update(self, ctx, *, message):

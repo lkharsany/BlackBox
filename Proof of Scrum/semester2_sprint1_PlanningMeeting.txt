@@ -1,0 +1,26 @@
+Sprint Planning Meeting:
+
+The team has decided on which product backlog items will be converted into working products during the sprint. They are as follows:
+-A command to allow the lecturer to add due dates to the discord as well as allow them to update them
+-A command to allow the students to see which assignments are due within a period of time specified by the students
+-A channel to allow the students to see all upcoming due dates which is automatically updated.
+
+These items were then split into individual tasks and divided amongst the development team.
+They are split as follows.
+
+Nabeel Uppel and Neeloufah Alli:
+- Assigned task of writing code to allow lecturer to set due dates as well as update them.
+- Assigned task of writing code to create channel which automatically updates.
+
+Ahmed Kharsany and Matthew Simon:
+-Assigned task of writing the user stories and acceptance tests
+-Assigned task of keeping track of meetings.
+
+Zaneli Steenveldt, Khorommbi Ganyane and Lindani Dlamini:
+-User diagrams
+
+Amen Moipushi:
+-Assigned task of keeping track of who is doing what at each daily sprint.
+
+
+The group has agreed to describe what they are doing each day in the WhatsApp groupchat to make sure all the requirements are met in time.

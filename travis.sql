@@ -81,3 +81,13 @@ CREATE TABLE IF NOT EXISTS TestDueDates
 `item_due` varchar(30),
 `created_by` varchar(30)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS TestServerLink
+(
+`id` int(6) auto_increment primary key,
+`server_id` varchar(50),
+`moodle_shorthand` varchar(100),
+`moodle_id` int(5),
+UNIQUE(server_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

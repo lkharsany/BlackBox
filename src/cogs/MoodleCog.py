@@ -379,6 +379,48 @@ def createCourseEmbed(ID, Coordinator, Name, Shorthand, isBot):
     return embed
 
 
+def addLinkServer(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""INSERT IGNORE INTO {table} (server_id, moodle_shorthand, moodle_id) Values (%s,%s,%s) ON DUPLICATE KEY UPDATE moodle_shorthand = %s, moodle_id=%s;"""
+        cur.execute(Q, val)
+        conn.commit()
+        Db.close()
+        return 1
+
+    except pymysql.err as err:
+        print(err)
+        Db.close()
+        return -1
+
+
+def getServerLink(table, val, isBot):
+    if isBot:
+        Db = TravisDBConnect()
+    else:  # pragma: no cover
+        Db = DBConnect()
+    try:
+        conn = Db.open()
+        cur = conn.cursor()
+        Q = f"""Select * FROM {table} WHERE server_id =%s;"""
+        cur.execute(Q, val)
+        result = cur.fetchone()
+        Db.close()
+        if result:
+            return result
+        else:
+            return -1
+    except Exception as e:  # pragma: no cover
+        print(e)
+        Db.close()
+        return -1
+
+
 class MoodleCog(commands.Cog):
 
     def __init__(self, bot):
@@ -417,6 +459,28 @@ class MoodleCog(commands.Cog):
             embed = createDueEmbed(item, date, member, isBot=False)
             await channel.send(embed=embed)
 
+    @tasks.loop(minutes=1)
+    async def checkMoodleDates(self):  # pragma: no cover
+        channel_name = "reminders"
+        await self.CleanChannel()
+        for guild in self.bot.guilds:
+            server = guild.id
+            row = getServerLink("ServerLink", (server, ), False)
+            if row != -1:
+                course_id = row["moodle_id"]
+                shortname = row["moodle_shorthand"]
+                channel = get(guild.text_channels, name=channel_name)
+                dates = getMoodleUpcomingDates(course_id)
+                title_embed = discord.Embed(color=0xff9999, title=shortname, description="")
+                await channel.send(embed=title_embed)
+                if dates:
+                    for k, v in dates.items():
+                        embed = createDueEmbed(k, v, self.bot.user, False)
+                        await channel.send(embed=embed)
+                else:
+                    await channel.send("Nothing Due")
+
+
     @commands.Cog.listener()
     async def on_ready(self):  # pragma: no cover
         is_travis = 'TRAVIS' in os.environ
@@ -426,7 +490,7 @@ class MoodleCog(commands.Cog):
                 channel = get(guild.text_channels, name=channel_name)
                 if channel is None:
                     await guild.create_text_channel(channel_name)
-            self.checkDates.start()
+            self.checkMoodleDates.start()
 
     # Displays all upcoming assignments due within the given time period the user specifies
     @commands.command(name='Upcoming', brief="", description="See What's Due", aliases=["upcoming", "upc"])
@@ -553,7 +617,7 @@ class MoodleCog(commands.Cog):
 
     @commands.command(name='Course', brief="", description="", aliases=["course"])
     @commands.cooldown(1, 2)
-    async def MoodleGetCourseCommand(self, ctx, *, msg): # pragma: no cover
+    async def MoodleGetCourseCommand(self, ctx, *, msg):  # pragma: no cover
         if msg.isdigit():
             course = getMoodleCourseByField("id", int(msg))
         else:
@@ -571,8 +635,24 @@ class MoodleCog(commands.Cog):
 
     @commands.command(name='CourseDates', brief="", description="", aliases=["coursedates"])
     @commands.cooldown(1, 2)
-    async def MoodleGetDueDates(self, ctx, *, msg): # pragma: no cover
-        if msg.isdigit():
+    async def MoodleGetDueDates(self, ctx, *, msg=None):  # pragma: no cover
+        if msg is None:
+            server_id = ctx.guild.id
+            val = (server_id,)
+            isBot = True
+            if not ctx.author.bot:
+                table = "ServerLink"
+                isBot = False
+            else:
+                table = "TestServerLink"
+            row = getServerLink(table, val, isBot)
+            if row != -1:
+                course_id = row["moodle_id"]
+            else:
+                await ctx.send("Could Not Find Course\nConsider Linking Course With This Server Using the LinkServer Command")
+                return
+
+        elif msg.isdigit():
             course_id = int(msg)
             course = getMoodleCourseByField("id", course_id)
             if not course:
@@ -590,11 +670,57 @@ class MoodleCog(commands.Cog):
         dates = getMoodleUpcomingDates(course_id)
         if dates:
             for k, v in dates.items():
-                embed = createDueEmbed(k,v, ctx.author, False)
+                embed = createDueEmbed(k, v, ctx.author, False)
                 await ctx.send(embed=embed)
         else:
             await ctx.send("Nothing Due")
 
+    @commands.command(name='LinkServer', brief="", description="", aliases=["linkserver"])
+    @commands.cooldown(1, 2)
+    async def ServerLink(self, ctx, *, msg):
+        server_id = ctx.guild.id
+        if msg.isdigit():
+            course_id = int(msg)
+            course = getMoodleCourseByField("id", course_id)
+            if course is not None:
+                shortname = course["shortname"]
+                name = course["displayname"]
+            else:
+                await ctx.send("Course Not Found")
+                return
+
+        else:
+            shortname = msg
+            course = getMoodleCourseByField("shortname", shortname)
+            if course is not None:
+                course_id = course["id"]
+                name = course["displayname"]
+            else:
+                await ctx.send("Course Not Found")
+                return
+
+        def check(m):
+            return m.author == ctx.author and m.content.lower() == "y"
+
+        await ctx.send(f"Is this course\n{name}?\n Y/N")
+        try:
+            msg = await self.bot.wait_for("message", check=check, timeout=20)
+            if msg is not None:
+                val = (server_id, shortname, course_id,shortname, course_id)
+                isBot = True
+                if not ctx.author.bot:
+                    table = "ServerLink"
+                    isBot = False
+                else:
+                    table = "TestServerLink"
+                code = addLinkServer(table, val, isBot)
+                if code != -1:
+                    await ctx.send("Server and Course Linked Successfully")
+                else:
+                    await ctx.send("An Error Occured. Please Try Again")
+
+        except asyncio.TimeoutError:
+            await ctx.send("Timeout Error. Please Try Again")
 
 def setup(bot):
     bot.add_cog(MoodleCog(bot))

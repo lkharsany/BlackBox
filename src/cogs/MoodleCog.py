@@ -1,5 +1,4 @@
 import asyncio
-
 import discord.embeds
 from discord.ext import commands, tasks
 from datetime import datetime
@@ -8,6 +7,47 @@ import os
 from sshtunnel import SSHTunnelForwarder
 from dateutil.parser import parse
 from discord.utils import get
+from requests import post
+
+# Module variables to connect to moodle api
+KEY = os.getenv("moodle_key")
+
+URL = os.getenv("moodle_url")
+ENDPOINT = "/webservice/rest/server.php"
+
+
+def rest_api_parameters(in_args, prefix='', out_dict=None):
+    """Transform dictionary/array structure to a flat dictionary, with key names
+    defining the structure.
+    """
+    if out_dict == None:
+        out_dict = {}
+    if not type(in_args) in (list, dict):
+        out_dict[prefix] = in_args
+        return out_dict
+    if prefix == '':
+        prefix = prefix + '{0}'
+    else:
+        prefix = prefix + '[{0}]'
+    if type(in_args) == list:
+        for idx, item in enumerate(in_args):
+            rest_api_parameters(item, prefix.format(idx), out_dict)
+    elif type(in_args) == dict:
+        for key, item in in_args.items():
+            rest_api_parameters(item, prefix.format(key), out_dict)
+    return out_dict
+
+
+def MoodleCall(fname, **kwargs):
+    """Calls moodle API function with function name fname and keyword arguments """
+    parameters = rest_api_parameters(kwargs)
+    parameters.update({"wstoken": KEY, 'moodlewsrestformat': 'json', "wsfunction": fname})
+    response = post(URL + ENDPOINT, parameters)
+    response = response.json()
+    if type(response) == dict and response.get('exception'):
+        raise SystemError("Error calling Moodle API\n", response)
+    return response
+
 
 isSSH = os.getenv('using_SSH')
 if isSSH.lower() == "true":  # pragma: no cover
@@ -137,7 +177,7 @@ def QueryDatesCommand(table, Server_id, days, isBot):
 
 
 # Returns all the items in the database whose due dates are 3 days away from the current date
-def QueryDates(table, isBot): # pragma: no cover
+def QueryDates(table, isBot):  # pragma: no cover
     if isBot:
         Db = TravisDBConnect()
     else:  # pragma: no cover
@@ -163,7 +203,7 @@ def QueryDates(table, isBot): # pragma: no cover
 def createDueEmbed(item, date, member, isBot):
     remaining = (date - datetime.now())
     if not isBot:  # pragma: no cover
-        embed = discord.Embed(color=0xff9999, title=item.capitalize() + " Due", description="")
+        embed = discord.Embed(color=0xff9999, title=item.capitalize(), description="")
         embed.add_field(name="Date", value=date.date().strftime("%d/%m/%Y"), inline=False)
         embed.add_field(name="Item", value=item, inline=False)
         if date.hour != 0:
@@ -248,6 +288,97 @@ def UpdateDueDate(table, val, isBot):
         return -1
 
 
+# redundant
+def getMoodleCalenderMonth(y, m):
+    function = "core_calendar_get_calendar_monthly_view"
+    res = MoodleCall(function, year=y, month=m)
+    return res
+
+
+# redundant
+def getMoodleDates(MonthDict, courseid):
+    words = ["closes", "due", "close"]
+    items = {}
+    for w in range(len(MonthDict["weeks"])):
+        weeks = MonthDict["weeks"][w]
+        days = weeks["days"]
+        for d in days:
+            events = d["events"]
+            has_events = d["hasevents"]
+            if has_events:
+                for i in events:
+                    if i["course"]["id"] == courseid:
+                        name = i["name"]
+                        startTime = datetime.fromtimestamp(i["timestart"])
+                        if any(word in name for word in words) and datetime.now() < startTime:
+                            items[name] = startTime
+    return items
+
+
+def getMoodleUpcomingDates(ID):
+    Dates = {}
+    function = "core_calendar_get_calendar_upcoming_view"
+    res = MoodleCall(function, courseid=ID)
+    events = res["events"]
+    for i in events:
+        name = i["name"]
+        due = datetime.fromtimestamp(i["timestart"])
+        event_type = i["eventtype"]
+        if event_type == "close":
+            Dates[name] = due
+    return Dates
+
+
+def getMoodleCourses():
+    function = "core_course_get_enrolled_courses_by_timeline_classification"
+    # classification can be inprogress, past or future
+    res = MoodleCall(function, classification="inprogress")
+    for i in res["courses"]:
+        print(i)
+
+
+def getMoodleCourseByField(f, val):
+    function = "core_course_get_courses_by_field"
+    # fields = id or shortname
+    # id = int and shortname=coursecode-acronym-year eg COMS3011A-SDP-2021
+    res = MoodleCall(function, field=f, value=val)["courses"]
+    if res:
+        return res[0]
+
+
+def mergeDict(x, y):
+    if not x:
+        return y
+    elif not y:
+        return x
+    else:
+        z = x.copy()
+        z.update(y)
+        return z
+
+
+def allDueDates(courseID):
+    DueDates = {}
+    for i in range(1, 13):
+        CalDict = getMoodleCalenderMonth(datetime.now().year, i)
+        due = getMoodleDates(CalDict, courseID)
+        if due:
+            DueDates = mergeDict(DueDates, due)
+    return DueDates
+
+
+def createCourseEmbed(ID, Coordinator, Name, Shorthand, isBot):
+    if not isBot:  # pragma: no cover
+        embed = discord.Embed(color=0xff9999, title=Name, description=Shorthand)
+        embed.add_field(name="ID", value=ID, inline=False)
+        embed.add_field(name="Course Coordinator", value=Coordinator, inline=False)
+    else:
+        embed = discord.Embed(color=0xff9999, title=Name, description="")
+        embed.add_field(name="ID", value=ID, inline=False)
+        embed.add_field(name="Course Coordinator", value=Coordinator, inline=False)
+    return embed
+
+
 class MoodleCog(commands.Cog):
 
     def __init__(self, bot):
@@ -255,7 +386,7 @@ class MoodleCog(commands.Cog):
         self.description = "Moodle Integration Commands"
 
     # clears the reminders channel of previous reminders so only most recent items due are visible
-    async def CleanChannel(self): # pragma: no cover
+    async def CleanChannel(self):  # pragma: no cover
         channel_name = "reminders"
         for guild in self.bot.guilds:
             channel = get(guild.text_channels, name=channel_name)
@@ -269,7 +400,7 @@ class MoodleCog(commands.Cog):
     # sends reminders in the form of a message for items which are due within 3 days of the current date
     # @tasks.loop(hours=24)
     @tasks.loop(minutes=1)
-    async def checkDates(self): # pragma: no cover
+    async def checkDates(self):  # pragma: no cover
         channel_name = "reminders"
         table = "DueDates"
 
@@ -287,7 +418,7 @@ class MoodleCog(commands.Cog):
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_ready(self): # pragma: no cover
+    async def on_ready(self):  # pragma: no cover
         is_travis = 'TRAVIS' in os.environ
         if not is_travis:
             channel_name = "reminders"
@@ -362,8 +493,7 @@ class MoodleCog(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.send("Item not added. Please ensure you use the correct format and try again")
 
-
-##Update command to change due dates
+    ##Update command to change due dates
     @commands.command(name='Update', brief="", description="Update due dates", aliases=["update"])
     @commands.cooldown(1, 2)
     async def Update(self, ctx, *, message):
@@ -420,6 +550,50 @@ class MoodleCog(commands.Cog):
 
         else:
             await ctx.send("No Such Item Exists")
+
+    @commands.command(name='Course', brief="", description="", aliases=["course"])
+    @commands.cooldown(1, 2)
+    async def MoodleGetCourseCommand(self, ctx, *, msg): # pragma: no cover
+        if msg.isdigit():
+            course = getMoodleCourseByField("id", int(msg))
+        else:
+            course = getMoodleCourseByField("shortname", msg.upper())
+        if course is not None:
+            c_id = str(course["id"])
+            idLong = course["displayname"].split("-")
+            name = idLong[1]
+            shorthand = idLong[0]
+            Coordinator = course["contacts"][0]["fullname"]
+            embed = createCourseEmbed(c_id, Coordinator, name, shorthand, False)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("Course Not Found")
+
+    @commands.command(name='CourseDates', brief="", description="", aliases=["coursedates"])
+    @commands.cooldown(1, 2)
+    async def MoodleGetDueDates(self, ctx, *, msg): # pragma: no cover
+        if msg.isdigit():
+            course_id = int(msg)
+            course = getMoodleCourseByField("id", course_id)
+            if not course:
+                await ctx.send("Could Not Find Course")
+                return
+
+        else:
+            course = getMoodleCourseByField("shortname", msg.upper())
+            if course is not None:
+                course_id = int(course["id"])
+            else:
+                await ctx.send("Could Not Find Course")
+                return
+
+        dates = getMoodleUpcomingDates(course_id)
+        if dates:
+            for k, v in dates.items():
+                embed = createDueEmbed(k,v, ctx.author, False)
+                await ctx.send(embed=embed)
+        else:
+            await ctx.send("Nothing Due")
 
 
 def setup(bot):

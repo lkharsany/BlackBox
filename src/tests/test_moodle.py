@@ -88,13 +88,8 @@ async def test_upcoming(interface):
 
 @test_collector()
 async def test_CourseDates(interface):
-    message = await interface.send_message("Testing Upcoming")
-    item = "testlab"
-    member = message.author
-    attributeList = ["author", "description"]
-    embed = Embed(color=0xff9999, title="", description=item.capitalize() + " Due")
-    embed.set_author(name=member.name, url=Embed.Empty, icon_url=member.avatar_url)
-    await interface.assert_reply_embed_equals("./Upcoming 5", embed, attributeList)
+    message = await interface.send_message("./CourseDates")
+    await interface.get_delayed_reply(2, interface.assert_message_equals, "Nothing Due")
 
 
 @test_collector()

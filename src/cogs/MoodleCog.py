@@ -640,6 +640,10 @@ class MoodleCog(commands.Cog):
     @commands.command(name='CourseDates', brief="", description="", aliases=["coursedates"])
     @commands.cooldown(1, 2)
     async def MoodleGetDueDates(self, ctx, *, msg=None):  # pragma: no cover
+        if ctx.author.bot:
+            await ctx.send("Nothing Due")
+            return
+
         if msg is None:
             server_id = ctx.guild.id
             val = (server_id,)

@@ -7,7 +7,6 @@ from discord import Embed
 from datetime import datetime, timedelta
 import asyncio
 
-
 class TravisDBConnect:
 
     def __init__(self):
@@ -100,6 +99,24 @@ async def test_update(interface):
         await interface.get_delayed_reply(2, interface.assert_message_equals, "Due date has been updated")
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'An error occurred, please try again')
+
+@test_collector()
+async def test_linkServer(interface):
+    Username = 829768047350251530
+    await interface.send_message("./LinkServer 187")
+    await asyncio.sleep(1)
+
+    y = await interface.get_delayed_reply(2, interface.assert_message_equals,
+                                          "Is this course\nCOMS2015A/COMS2021A - Analysis of Algorithms - 2021?\n Y/N")
+    if y:
+        message = await interface.send_message("Y")
+
+    row = getRow(Username)
+    if row != -99:
+        await interface.get_delayed_reply(2, interface.assert_message_equals, 'Server and Course Linked Successfully')
+    else:
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'An error occurred, please try again')
+
 
 
 # Actually run the bot

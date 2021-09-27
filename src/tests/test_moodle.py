@@ -87,7 +87,7 @@ async def test_upcoming(interface):
     await interface.assert_reply_embed_equals("./Upcoming 5", embed, attributeList)
 
 @test_collector()
-async def test_CourseDates(interface):
+async def test_courseDates(interface):
     message = await interface.send_message("./CourseDates")
     await interface.get_delayed_reply(2, interface.assert_message_equals, "Nothing Due")
 

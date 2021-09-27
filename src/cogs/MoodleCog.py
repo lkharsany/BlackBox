@@ -245,7 +245,7 @@ def CleanUp(table, isBot):
         Db.close()
         return -1
 
-
+#Returns row where server_id and the item_due is specified
 def GetDueDateRow(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -267,7 +267,7 @@ def GetDueDateRow(table, val, isBot):
         Db.close()
         return -1
 
-
+# Changes the due date of a certain item
 def UpdateDueDate(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -366,7 +366,7 @@ def allDueDates(courseID):
             DueDates = mergeDict(DueDates, due)
     return DueDates
 
-
+# Creates an embed to display course details
 def createCourseEmbed(ID, Coordinator, Name, Shorthand, isBot):
     if not isBot:  # pragma: no cover
         embed = discord.Embed(color=0xff9999, title=Name, description=Shorthand)
@@ -378,7 +378,7 @@ def createCourseEmbed(ID, Coordinator, Name, Shorthand, isBot):
         embed.add_field(name="Course Coordinator", value=Coordinator, inline=False)
     return embed
 
-
+# Adds the moodle id and shorthand for a specific course as well as the server it should connect to
 def addLinkServer(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -398,7 +398,7 @@ def addLinkServer(table, val, isBot):
         Db.close()
         return -1
 
-
+# Gets the moodle id and shorthand based on the server_id given
 def getServerLink(table, val, isBot):
     if isBot:
         Db = TravisDBConnect()
@@ -616,7 +616,8 @@ class MoodleCog(commands.Cog):
 
         else:
             await ctx.send("No Such Item Exists")
-
+            
+    # displays if found details of a specified course
     @commands.command(name='Course', brief="", description="", aliases=["course"])
     @commands.cooldown(1, 2)
     async def MoodleGetCourseCommand(self, ctx, *, msg):  # pragma: no cover
@@ -634,7 +635,8 @@ class MoodleCog(commands.Cog):
             await ctx.send(embed=embed)
         else:
             await ctx.send("Course Not Found")
-
+            
+    # displays items due for specified course 
     @commands.command(name='CourseDates', brief="", description="", aliases=["coursedates"])
     @commands.cooldown(1, 2)
     async def MoodleGetDueDates(self, ctx, *, msg=None):  # pragma: no cover
@@ -676,7 +678,9 @@ class MoodleCog(commands.Cog):
                 await ctx.send(embed=embed)
         else:
             await ctx.send("Nothing Due")
-
+            
+            
+    # Links a server to a course 
     @commands.command(name='LinkServer', brief="", description="", aliases=["linkserver"])
     @commands.cooldown(1, 2)
     async def ServerLink(self, ctx, *, msg):

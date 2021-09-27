@@ -462,6 +462,8 @@ class MoodleCog(commands.Cog):
     @tasks.loop(minutes=1)
     async def checkMoodleDates(self):  # pragma: no cover
         channel_name = "reminders"
+        table = "DueDates"
+        CleanUp(table, isBot=False)
         await self.CleanChannel()
         for guild in self.bot.guilds:
             server = guild.id

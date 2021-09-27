@@ -101,6 +101,19 @@ async def test_update(interface):
     else:
         await interface.get_delayed_reply(1, interface.assert_message_equals, 'An error occurred, please try again')
 
+@test_collector()
+async def test_course(interface):
+    ID = "188"
+    Coordinator = "Branden Ingram"
+    Shorthand = "COMS3010A"
+    Name = "Operating Systems"
+    message = await interface.send_message("Testing Course")
+    attributeList = ["description"]
+    embed = Embed(color=0xff9999, title=Name, description=Shorthand)
+    embed.add_field(name="ID", value=ID, inline=False)
+    embed.add_field(name="Course Coordinator", value=Coordinator, inline=False)
+    await interface.assert_reply_embed_equals("./Course 188", embed, attributeList)
+
 
 # Actually run the bot
 if __name__ == "__main__":

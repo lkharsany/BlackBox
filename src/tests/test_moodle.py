@@ -114,6 +114,24 @@ async def test_course(interface):
     embed.add_field(name="Course Coordinator", value=Coordinator, inline=False)
     await interface.assert_reply_embed_equals("./Course 188", embed, attributeList)
 
+@test_collector()
+async def test_linkServer(interface):
+    Username = 829768047350251530
+    await interface.send_message("./LinkServer 187")
+    await asyncio.sleep(1)
+
+    y = await interface.get_delayed_reply(2,interface.assert_message_equals,
+                                          "Is this course\nCOMS2015A/COMS2021A - Analysis of Algorithms - 2021?\n Y/N")
+    if y:
+        message = await interface.send_message("Y")
+
+    row = getRow(Username)
+    if row != -99:
+        await interface.get_delayed_reply(2, interface.assert_message_equals, 'Server and Course Linked Successfully')
+    else:
+        await interface.get_delayed_reply(1, interface.assert_message_equals, 'An error occurred, please try again')
+
+
 
 # Actually run the bot
 if __name__ == "__main__":

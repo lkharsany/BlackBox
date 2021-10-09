@@ -82,7 +82,7 @@ class BasicCog(commands.Cog):
         await ctx.channel.purge(limit=amount)
 
     @commands.command(name="Register", brief="Sends a list to the tutor of presents tutors",
-                      description="Gets a list of people who is present in the voice channel", aliases=["Reg","reg", "register", "pres", "present"])
+                      description="Get a list of people who is present in the voice channel", aliases=["Reg","reg", "register", "pres", "present"])
     @commands.cooldown(1, 2)
     async def Register(self, ctx):
         role = utils.find(lambda r: r.name == 'tutor' or r.name == 'Tutor', ctx.message.guild.roles)

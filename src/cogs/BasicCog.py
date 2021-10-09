@@ -85,6 +85,7 @@ class BasicCog(commands.Cog):
                       description="Get a list of people who is present in the voice channel", aliases=["Reg","reg", "register", "pres", "present"])
     @commands.cooldown(1, 2)
     async def Register(self, ctx):
+
         role = utils.find(lambda r: r.name == 'tutor' or r.name == 'Tutor', ctx.message.guild.roles)
         members = []
         tutor = []

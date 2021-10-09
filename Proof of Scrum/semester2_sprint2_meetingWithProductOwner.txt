@@ -1,0 +1,21 @@
+Sprint 2 Semester 2 Meeting with Pravesh
+Meeting Minutes
+
+Meeting took place on 7th August on Discord.
+ 
+•Features to be implemented: 
+
+1 - Link Server:
+- A command to link a server to the moodle page using the moodle course code ID.
+
+2 - Course
+- A command to give basic information about any course using the moodle course code ID.
+- Should mention, course name, course coordinator name, etc. 
+
+3 - CourseDate
+- Gives the due dates for any course given the course codes ID
+- Bot must be enrolled in that course to have access to its calendar to be able to pull the dates.
+
+4 - Reminders channel
+- A continuation of the reminders channel from last sprint.
+- The reminders channel should now be automatically updated instead of the lecturer having to make changes.

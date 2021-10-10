@@ -18,7 +18,7 @@ else:
 
 TOKEN = os.getenv('TOKEN')
 
-
+bot.load_extension("cogs.PollCog")
 bot.load_extension("cogs.SQLCog")
 bot.load_extension("cogs.BasicCog")
 bot.load_extension("cogs.MoodleCog")

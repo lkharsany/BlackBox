@@ -124,7 +124,8 @@ class BasicCog(commands.Cog):
         f.close()
         file_name = ctx.guild.name + " " + date_time.strftime("%d/%m/%Y")
         await ctx.author.send(file=File(file_path, filename=file_name))
-
+    
+    #Allows user to create a poll for people to vote on.
     @commands.command(name="Poll")
     async def poll(self, ctx, question, *options: str):
         if len(options) <= 1:

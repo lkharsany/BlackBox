@@ -2,7 +2,7 @@ import asyncio
 import datetime
 
 from discord import File, channel
-from discord import utils
+from discord import utils, Embed
 from discord.ext import commands
 
 
@@ -82,7 +82,8 @@ class BasicCog(commands.Cog):
         await ctx.channel.purge(limit=amount)
 
     @commands.command(name="Register", brief="Sends a list to the tutor of presents tutors",
-                      description="Get a list of people who is present in the voice channel", aliases=["Reg","reg", "register", "pres", "present"])
+                      description="Get a list of people who is present in the voice channel",
+                      aliases=["Reg", "reg", "register", "pres", "present"])
     @commands.cooldown(1, 2)
     async def Register(self, ctx):
 
@@ -123,6 +124,28 @@ class BasicCog(commands.Cog):
         f.close()
         file_name = ctx.guild.name + " " + date_time.strftime("%d/%m/%Y")
         await ctx.author.send(file=File(file_path, filename=file_name))
+
+    @commands.command(name="Poll")
+    async def poll(self, ctx, question, *options: str):
+        if len(options) <= 1:
+            await ctx.send('You need more than one option to make a poll!')
+            return
+        if len(options) > 10:
+            await ctx.send('You cannot make a poll for more than 10 things!')
+            return
+
+        if len(options) == 2 and options[0] == 'yes' and options[1] == 'no':
+            reactions = ['✅', '❌']
+        else:
+            reactions = ['1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣', '7⃣', '8⃣', '9⃣', '🔟']
+
+        description = []
+        for x, option in enumerate(options):
+            description += '\n{} {}'.format(reactions[x], option)
+        embed = Embed(title=question, description=''.join(description))
+        react_message = await ctx.send(embed=embed)
+        for react in reactions[:len(options)]:
+            await react_message.add_reaction(react)
 
 
 def setup(bot):

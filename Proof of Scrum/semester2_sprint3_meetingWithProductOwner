@@ -1,0 +1,16 @@
+Sprint 3 Semester 2 Meeting with Pravesh
+Meeting Minutes
+
+Meeting took place on 29th September over WhatsApp.
+ 
+•Features to be implemented: 
+
+1 - Poll Function
+- A command to create a poll to give the students an easier way to communicate with the lecturers.
+
+2 - Register function
+- A command should be created to allow the tutor to keep track of who is in their voice channel for their tutorial.
+- The function should then create a text file with this information and direct message it to the tutor.
+
+3 - Clear function
+- A command should be created to allow for the tutor/lecturer to delete "x" amount of messages from any text channel.

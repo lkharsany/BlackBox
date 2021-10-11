@@ -1,0 +1,35 @@
+Sprint Planning Meeting:
+
+The team has decided on which product backlog items will be converted into working products during the sprint. They are as follows:
+1 - A command to create a poll to give the students an easier way to communicate with the lecturers.
+2 - A command should be created to allow the tutor to keep track of who is in their voice channel for their tutorial.
+3 - The function should then create a text file with this information and direct message it to the tutor.
+4 - A command should be created to allow for the tutor/lecturer to delete "x" amount of messages from any text channel.
+
+These items were then split into individual tasks and divided amongst the development team.
+They are split as follows.
+
+Khorommbi Ganyane:
+-Assigned with doing task 3.
+
+Ahmed Kharsany:
+-Assigned with doing task 2.
+
+Nabeel Uppel:
+-Assigned with doing task 1.
+
+Matthew Simon:
+-Assigned with doing task 4.
+-Assigned with task of doing the user stories and accepance criteria.
+
+Neeloufah Alli:
+-Assigned with doing the testing for each of the tasks.
+
+Zaneli Steenveldt and Lindani Dlamini:
+-Assigned with doing the user diagrams.
+
+Amen Moipushi:
+-Assigned task of keeping track of who is doing what at each daily sprint.
+
+
+The group has agreed to describe what they are doing each day in the WhatsApp groupchat to make sure all the requirements are met in time.

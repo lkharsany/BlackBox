@@ -18,6 +18,7 @@ ssh_host = <SSH Hostname>
 ssh_username = <SSH Username>
 ssh_password = <SSH Password>
 
-
+moodle_url = https://courses.ms.wits.ac.za/moodle/
+moodle_key = <MOODLE KEY>
 
 

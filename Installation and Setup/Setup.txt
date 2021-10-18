@@ -39,10 +39,9 @@ b) The DiscordMySql.sql script has everything that will be needed for the bot to
     - MySQL WorkBench:
         - if you have MySQL WorkBench installed you can run the script directly from the application.
 
-    - Alternitively:
+    - Alternatively:
         - Log in to MySQL using "mysql -u user -p"
         - Copy and Paste command into the terminal
-
 
 
 4. Environmental Variables:
@@ -60,3 +59,17 @@ e) If you plan to use MySQL that is not running on the same machine/server (eg. 
     - Note: The database is relative meaning if the bot itself is running on the same server as MySQL, there would be no need to use SSH.
 
 
+5. Access Commands based on roles.
+By default, any individual can access any command, however you can limit access by using the decorator above a command function that you wish to limit access to
+For single role:
+@commands.has_role('Lecturer')
+or
+for multiple roles to access command
+@commands.has_any_role('lecturer', 'Lecturer', 'tutor')
+
+
+6. Moodle Commands
+In order to access Moodle Commands a token is needed. You can run the getMoodleToken.py script. It will print the key to console where you can copy it to your .env file
+You can change the username, password and base url as needed.
+
+Note: For the command ./CourseDates the bot's moodle user will be required to be enrolled in the course that you are trying to access the dates for.

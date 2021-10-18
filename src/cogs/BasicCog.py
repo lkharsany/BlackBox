@@ -124,9 +124,9 @@ class BasicCog(commands.Cog):
         f.close()
         file_name = ctx.guild.name + " " + date_time.strftime("%d/%m/%Y")
         await ctx.author.send(file=File(file_path, filename=file_name))
-    
-    #Allows user to create a poll for people to vote on.
-    @commands.command(name="Poll")
+
+    # Allows user to create a poll for people to vote on.
+    @commands.command(name="Poll", aliases=["poll"])
     async def poll(self, ctx, question, *options: str):
         if len(options) <= 1:
             await ctx.send('You need more than one option to make a poll!')
@@ -147,6 +147,23 @@ class BasicCog(commands.Cog):
         react_message = await ctx.send(embed=embed)
         for react in reactions[:len(options)]:
             await react_message.add_reaction(react)
+
+    # Detects when a reaction is added to a message
+    @commands.Cog.listener()
+    @commands.cooldown(1, 2)
+    async def on_raw_reaction_add(self, payload):  # checks whenever a reaction is added to a message
+        # whether the message is in the cache or not
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+
+        # iterating through each reaction in the message
+        for r in message.reactions:
+
+            # checks the reactant isn't a bot and the emoji isn't the one they just reacted with
+            if payload.member in await r.users().flatten() and not payload.member.bot and str(r) != str(payload.emoji):
+                # removes the reaction
+                await message.remove_reaction(r.emoji, payload.member)
 
 
 def setup(bot):

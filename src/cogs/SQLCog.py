@@ -968,6 +968,8 @@ class SQLCog(commands.Cog):
         channel = await self.bot.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         emoji = str(payload.emoji)
+        if message.author.bot:
+            return
 
         guild = payload.guild_id
 
@@ -1008,6 +1010,8 @@ class SQLCog(commands.Cog):
 
         channel = await self.bot.fetch_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
+        if message.author.bot:
+            return
         user = await self.bot.fetch_user(payload.user_id)
         emoji = str(payload.emoji)
 

@@ -1,0 +1,17 @@
+Sprint 3 Semester 2 Meeting with Pravesh
+Meeting Minutes
+
+Meeting took place on 13th October over Discord.
+ 
+•Features to be implemented: 
+
+1 - Poll Function
+- An update to the poll function so that people can't vote for multiple options
+
+2 - Deploying bot to multiple servers
+- A walk-through guide on how to deploy the bot to any server.
+- Bot should not be server specific.
+
+This sprint was a dynamic sprint to make sure the product was working.
+No more functions are required of the bot.
+The bot has full functionality
